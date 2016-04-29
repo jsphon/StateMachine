@@ -10,8 +10,6 @@ class Transition( object ):
         else:
             self.conditions = ( conditions, )
 
-        self.source.add_transition( self )
-
     def __repr__(self):
         condition_description = self.condition_description()
         return 'Transition from %s to %s, %s'%(self.source,self.target,condition_description)
