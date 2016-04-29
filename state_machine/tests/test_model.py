@@ -8,11 +8,6 @@ class ModelTests(unittest.TestCase):
     def test___init__(self):
         m = Model( 'test_model' )
 
-    def test_recover(self):
-
-        data = { CURRENT_STATE_NAME: 'test state' }
-        m    = Model( data=data )
-
     def test_recover_state(self):
 
         state1 = MagicMock()
