@@ -1,6 +1,6 @@
 
 
-from state_machine.exceptions import StateMachineException
+from state_machine.exception import StateMachineException
 from state_machine.transition import Transition
 
 class State( object ):
@@ -33,7 +33,7 @@ class State( object ):
         pass
 
     def end(self, data, model ):
-        self.onEnd( data, model )
+        self.on_end( data, model )
 
     def on_end(self, data, model ):
         """ child classes can optionally extend this """

@@ -5,7 +5,7 @@ Created on 24 May 2015
 '''
 import unittest
 
-from state_machine.exceptions import StateMachineException
+from state_machine.exception import StateMachineException
 from state_machine.state import State
 from state_machine.transition import Transition
 from state_machine.condition import AlwaysFalse, AlwaysTrue, Condition
