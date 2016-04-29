@@ -34,7 +34,7 @@ class Data( object ):
     def set_multi(self, **kwargs ):
         data = self._read()
         data.update( kwargs )
-        self._write()
+        self._write(data)
 
     def _read(self):
         if os.path.exists( self.filename ):

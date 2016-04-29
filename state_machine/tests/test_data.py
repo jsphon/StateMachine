@@ -23,6 +23,17 @@ class DataTests(unittest.TestCase):
         d.set( 'hello', 'world' )
         self.assertEqual( 'world', d.get( 'hello' ) )
 
+    def test_set_multi(self):
+        '''
+        Test set and get at the same time
+        '''
+        name = 'test'
+        d    = Data( name )
+        d.set_multi( hello='world', foo='bar' )
+        self.assertEqual( 'world', d.get( 'hello' ) )
+        self.assertEqual( 'bar', d.get( 'foo' ) )
+
+
     def test___setitem____getitem__(self):
 
         name = 'test'
