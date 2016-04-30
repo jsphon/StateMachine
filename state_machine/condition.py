@@ -15,6 +15,7 @@ class AlwaysTrue( Condition ):
     def is_triggered( self, data, model ):
         return True
 
+
 class AlwaysFalse(Condition):
 
     def __init__(self):
@@ -23,17 +24,14 @@ class AlwaysFalse(Condition):
     def is_triggered( self, data, model ):
         return False
 
+
 class CompositeOrCondition( Condition ):
     def __init__(self,conditions):
         self.conditions = conditions
         self.name = 'OR(%s)' % ','.join( c.name for c in conditions )
 
     def is_triggered( self, data, model ):
-        for c in self.conditions:
-            r,msg = c.is_triggered( data, model )
-            if r:
-                return r, msg
-        return False, None
+        return any(c.is_triggered(data, model) for c in self.conditions)
 
 
 class CompositeAndCondition( Condition ):
@@ -43,20 +41,18 @@ class CompositeAndCondition( Condition ):
         self.name = 'AND(%s)' % ','.join( c.name for c in conditions )
 
     def is_triggered( self, data, model ):
-        for c in self.conditions:
-            r,msg = c.is_triggered( data, model )
-            if not r:
-                return r, msg
-        return r, msg
+        return all( c.is_triggered(data, model) for c in self.conditions)
 
+# class OppositeCondition( Condition ):
+#     """ Return the inverse of Condition """
+#
+#     def __init__(self, source):
+#         self.name = 'NOT(%s)'%source.name
+#         self.source=source
+#
+#     def is_triggered(self, data, model):
+#         r, _ = self.source.is_triggered( data, model )
+#         return not r, None
 
-class OppositeCondition( Condition ):
-    """ Return the inverse of Condition """
-
-    def __init__(self, source):
-        self.name = 'NOT(%s)'%source.name
-        self.source=source
-
-    def is_triggered(self, data, model):
-        r, _ = self.source.is_triggered( data, model )
-        return not r, None
+ALWAYS_TRUE = AlwaysTrue()
+ALWAYS_FALSE = AlwaysFalse()
