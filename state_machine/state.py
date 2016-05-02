@@ -25,10 +25,10 @@ class State( object ):
         t = Transition( self, target, conditions )
         self._transitions.append(t)
 
-    def start(self, data, model, state_input=None ):
-        return self.on_start( data, model, state_input )
+    def start(self, data, model):#, state_input=None ):
+        return self.on_start( data, model)#, state_input )
 
-    def on_start(self, data, model, state_input ):
+    def on_start(self, data, model):#, state_input=None ):
         """ child classes can optionally extend this """
         pass
 
@@ -51,7 +51,7 @@ class State( object ):
             model.logger.info( 'Testing %s',transition )
             is_triggered = transition.is_triggered(data, model)
             if is_triggered:
-                model.logger.info( 'Transitioning from %s to %s'%(self,transition.target))
+                model.logger.info( 'Transition from %s to %s triggered'%(self,transition.target))
                 return transition
 
 
