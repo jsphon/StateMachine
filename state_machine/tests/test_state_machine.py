@@ -74,6 +74,33 @@ class StateMachineTests(unittest.TestCase):
         # VERIFY
         self.assertEqual(tgt, model.current_state)
 
+    def test_run_passes_start_result(self):
+        # # Need to be able to send start_result to the next state
+        # e.g.
+        #     state place book order will check inventory straight away
+        #         -   no inventory
+        #         -   has inventory
+
+        # SETUP
+        sm = StateMachine( 'state machine 1' )
+
+        tgt = State( 'tgt' )
+        tgt.start  = lambda *args: 'start_result'
+        tgt.run       = MagicMock()
+
+        src = State( 'src' )
+        src.add_transition_to( tgt, AlwaysTrue() )
+
+        model = Model( 'test_model' )
+        model.set_state(src)
+
+        sm.run(None, model)
+
+        self.assertEqual(1, tgt.run.call_count)
+        self.assertEqual(None, tgt.run.call_args[0][0])
+        self.assertEqual(model, tgt.run.call_args[0][1])
+        self.assertEqual('start_result', model.state_start_result)
+
 
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.testName']

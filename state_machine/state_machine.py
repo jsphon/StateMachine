@@ -19,10 +19,10 @@ CURRENT_STATE_START_RESULT = 'current_state_start_result'
 
 class StateMachine( object ):
 
-    def __init__( self, name='' ):
+    def __init__(self, name='', start_state=None):
 
         self.name           = name 
-        self._default_state = None
+        self._start_state   = start_state
         self.states         = {}
 
     def add_state(self,new_state):
@@ -32,11 +32,11 @@ class StateMachine( object ):
             self.states[ new_state.name ] = new_state            
             
     @property
-    def default_state(self):
-        return self._default_state
+    def start_state(self):
+        return self._start_state
     
-    def set_default_state(self, default_state):
-        self._default_state = default_state
+    def set_start_state(self, start_state):
+        self._start_state = start_state
          
     def run(self, data, model):
         try:
@@ -46,7 +46,7 @@ class StateMachine( object ):
             msg += traceback.format_exc()
             model.logger.error( msg )
         
-    def _run(self, data, model ):
+    def _run(self, data, model, start_result=None ):
         
         if model.current_state:
             model.current_state.run( data, model )
@@ -63,9 +63,9 @@ class StateMachine( object ):
                 #model.logger.info( '%s started successfully with result: %s',transition_state.target.name,str(start_result))
                 #model.logger.info( 'Updating persistent state data')
 
-                model.set_state( transition.target, start_result )
+                model.set_state( transition.target, start_result=start_result )
 
-                self.run( data, model, start_result )
+                self.run( data, model )
 
         else:
             msg = 'Model has no current state'
