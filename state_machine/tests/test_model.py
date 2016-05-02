@@ -33,13 +33,13 @@ class ModelTests(unittest.TestCase):
 
         state1  = MagicMock()
         state1.name = 'test state'
-        state_input = 'state_input'
+        #state_input = 'state_input'
         start_result = 'start_result'
 
-        model.set_state(state1, state_input, start_result)
+        model.set_state(state1, start_result)
 
         self.assertEqual( state1, model.current_state )
-        self.assertEqual( state_input, model.state_input )
+        #self.assertEqual( state_input, model.state_input )
         self.assertEqual( start_result, model.state_start_result )
 
         print( 'finished test_set_state' )
