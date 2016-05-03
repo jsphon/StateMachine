@@ -7,6 +7,7 @@ class Condition( object ):
     def is_triggered( self, data, model ):
         raise NotImplementedError()
 
+
 class AlwaysTrue( Condition ):
 
     def __init__(self):

@@ -4,7 +4,7 @@ import unittest
 from state_machine.state_machine import StateMachine
 from state_machine.exception import StateMachineException
 from state_machine.state import State
-from state_machine.condition import AlwaysTrue, AlwaysFalse
+from state_machine.condition import ALWAYS_TRUE, ALWAYS_FALSE
 from state_machine.model import Model
 from mock import MagicMock
 
@@ -63,7 +63,7 @@ class StateMachineTests(unittest.TestCase):
         src = State( 'src' )
         tgt = State( 'tgt' )
 
-        src.add_transition_to( tgt, AlwaysTrue() )
+        src.add_transition_to( tgt, ALWAYS_TRUE )
 
         model = Model( 'test_model' )
         model.set_state(src)
@@ -84,22 +84,23 @@ class StateMachineTests(unittest.TestCase):
         # SETUP
         sm = StateMachine( 'state machine 1' )
 
-        tgt = State( 'tgt' )
-        tgt.start  = lambda *args: 'start_result'
-        tgt.run       = MagicMock()
+        tgt       = State( 'tgt' )
+        tgt.start = lambda *args: 'start_result'
+        tgt.run   = MagicMock()
 
         src = State( 'src' )
-        src.add_transition_to( tgt, AlwaysTrue() )
+        src.add_transition_to( tgt, ALWAYS_TRUE )
 
         model = Model( 'test_model' )
-        model.set_state(src)
+        model.set_state(src, start_result='input')
 
         sm.run(None, model)
 
         self.assertEqual(1, tgt.run.call_count)
         self.assertEqual(None, tgt.run.call_args[0][0])
         self.assertEqual(model, tgt.run.call_args[0][1])
-        self.assertEqual('start_result', model.state_start_result)
+        self.assertEqual('start_result', model.current_state_start_result)
+        self.assertEqual('input', model.current_state_input)
 
 
 if __name__ == "__main__":

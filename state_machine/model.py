@@ -1,6 +1,7 @@
 from state_machine.constants import CURRENT_STATE_NAME, CURRENT_STATE_COMMENT, CURRENT_STATE_INPUT, CURRENT_STATE_START_RESULT
 from state_machine.data import Data
 
+
 class Model( object ):
     """ For storing state machine data """
 
@@ -32,16 +33,16 @@ class Model( object ):
     def load_state_name(self):
         return self.data.get( CURRENT_STATE_NAME )
 
-    def set_state(self, state, start_result=None ):
+    def set_state(self, state, state_input=None, start_result=None ):
         kwargs = {
             CURRENT_STATE_NAME: state.name,
-            #CURRENT_STATE_INPUT: state_input,
+            CURRENT_STATE_INPUT: state_input,
             CURRENT_STATE_START_RESULT: start_result,
             CURRENT_STATE_COMMENT:'',
         }
         self.data.set_multi( **kwargs )
         self._current_state = state
-        #self._current_state_input = state_input
+        self._current_state_input = state_input
         self._current_state_start_result = start_result
 
     def set_state_comment(self, comment ):
@@ -51,27 +52,13 @@ class Model( object ):
     def current_state(self):
         return self._current_state
 
-    # @property
-    # def state_input(self):
-    #     """ Return the input data for the current state
-    #     """
-    #     if self._current_state_input is None:
-    #         self._current_state_input = self.data.get( CURRENT_STATE_INPUT )
-    #     return self._current_state_input
-    #
-    # @state_input.setter
-    # def state_input(self, value):
-    #     self.data.set( CURRENT_STATE_INPUT, value )
-    #     self.current_state_input = value
+    @property
+    def current_state_input(self):
+        """ Return the input data for the current state
+        """
+        return self._current_state_input
 
     @property
-    def state_start_result(self):
+    def current_state_start_result(self):
         """ Return the result of onStart """
-        if self._current_state_start_result is None:
-            self._current_state_start_result = self.data.get( CURRENT_STATE_START_RESULT )
         return self._current_state_start_result
-
-    @state_start_result.setter
-    def state_start_result(self,value):
-        self.data.set( CURRENT_STATE_START_RESULT, value )
-        self.current_state_start_result = value
