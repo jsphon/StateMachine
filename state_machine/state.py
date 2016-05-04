@@ -5,9 +5,10 @@ from state_machine.transition import Transition
 
 class State( object ):
 
-    def __init__( self, name='' ):
+    def __init__( self, name='', default_transition=None ):
         self.name=name
         self._transitions = []
+        self.default_transition = default_transition
 
     def __repr__(self):
         return 'State:%s'%self.name
@@ -53,6 +54,7 @@ class State( object ):
             if is_triggered:
                 model.logger.info( 'Transition from %s to %s triggered'%(self,transition.target))
                 return transition
+        return self.default_transition
 
 
 class FinalState(State):
