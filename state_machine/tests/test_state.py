@@ -56,7 +56,7 @@ class StateTests(unittest.TestCase):
         self.assertEqual( 2, len( s._transitions ) )
         self.assertEqual(s._transitions[1], result )
 
-    def test_default_transition(self):
+    def test_add_default_transition_to(self):
 
         s = State(name='test state')
 
@@ -64,12 +64,12 @@ class StateTests(unittest.TestCase):
         s3 = State(name='should not get here')
 
         s.add_transition_to(s3, ALWAYS_FALSE)
-        s.default_transition = s2
+        s.add_default_transition_to(s2)
 
         model  = MagicMock()
-        result = s.find_next_triggered_transition(None,model)
+        t      = s.find_next_triggered_transition(None,model)
 
-        self.assertEqual(s2, result)
+        self.assertEqual(s2, t.target)
 
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.testName']

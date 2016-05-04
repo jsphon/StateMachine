@@ -8,7 +8,7 @@ class State( object ):
     def __init__( self, name='', default_transition=None ):
         self.name=name
         self._transitions = []
-        self.default_transition = default_transition
+        self.default_transition = None
 
     def __repr__(self):
         return 'State:%s'%self.name
@@ -17,6 +17,15 @@ class State( object ):
         if transition.source!=self:
             raise StateMachineException( 'transition source is not this state' )
         self._transitions.append( transition )
+
+
+    def add_default_transition_to(self, target):
+        """
+        Add a default transition to target
+        :param target:  the target state
+        :return:
+        """
+        self.default_transition = Transition(self, target, None)
 
     def add_transition_to(self, target, conditions):
         """
