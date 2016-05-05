@@ -22,6 +22,9 @@ class Data( object ):
     def __repr__(self):
         return 'Data:%s[%s]'%(self.name,self.filename)
 
+    def is_new(self):
+        return not os.path.exists(self.filename)
+
     def set(self, key, value):
         data = self._read()
         if ( key in data ) and ( data[ key ]==value ):
