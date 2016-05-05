@@ -4,7 +4,7 @@ import unittest
 from state_machine.state_machine import StateMachine
 from state_machine.exception import StateMachineException
 from state_machine.state import State
-from state_machine.condition import ALWAYS_TRUE, ALWAYS_FALSE
+from state_machine.condition import ALWAYS_TRUE, ALWAYS_FALSE, AlwaysTrue
 from state_machine.model import Model
 from mock import MagicMock
 
@@ -68,8 +68,10 @@ class StateMachineTests(unittest.TestCase):
         model = Model( 'test_model' )
         model.set_state(src)
 
+        data = {ALWAYS_TRUE.listens_for:1}
+
         # TEST
-        sm.run(None, model)
+        sm.run(data, model)
 
         # VERIFY
         self.assertEqual(tgt, model.current_state)
@@ -94,13 +96,49 @@ class StateMachineTests(unittest.TestCase):
         model = Model( 'test_model' )
         model.set_state(src, start_result='input')
 
-        sm.run(None, model)
+        data = {ALWAYS_TRUE.listens_for:1}
+        sm.run(data, model)
 
         self.assertEqual(1, tgt.run.call_count)
-        self.assertEqual(None, tgt.run.call_args[0][0])
+        self.assertEqual(data, tgt.run.call_args[0][0])
         self.assertEqual(model, tgt.run.call_args[0][1])
         self.assertEqual('start_result', model.current_state_start_result)
         self.assertEqual('input', model.current_state_input)
+
+    def test_run_splits_streams_correctly(self):
+
+        sm = StateMachine('test machine')
+
+        src = State( 'src' )
+        tgt1 = State( 'tgt1' )
+        tgt2 = State('tgt2')
+
+        c1  = AlwaysTrue()
+        c1.listens_for = 'stream1'
+
+        c2 = AlwaysTrue()
+        c2.listens_for = 'stream2'
+
+        src.add_transition_to( tgt1, c1 )
+        src.add_transition_to( tgt2, c2 )
+
+        model = Model( 'test' )
+
+        # Test1
+        model.set_state(src)
+        sm.run( {'stream1':1}, model )
+        self.assertEqual(tgt1, model.current_state)
+
+        # Test2
+        model.set_state(src)
+        sm.run( {'stream2':1}, model )
+        self.assertEqual(tgt2, model.current_state)
+
+        # Test3
+        model.set_state(src)
+        sm.run( {'none':1}, model )
+        self.assertEqual(src, model.current_state)
+
 
 
 if __name__ == "__main__":

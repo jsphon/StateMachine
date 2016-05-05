@@ -19,27 +19,13 @@ class StateTests(unittest.TestCase):
     def test___init__(self):
         s = State(name='test state')
 
-    def test_add_transition(self):
-        s = State(name='test state')
-        t = MagicMock()
-        t.source = s
-        s.add_transition( t )
-        self.assertEqual( t, s._transitions[0] )
-
-    def test_add_transition_exception(self):
-        s = State(name='test state')
-        t = MagicMock()
-
-        with self.assertRaises( StateMachineException ):
-            s.add_transition( t )
-
     def test_add_transition_to(self):
         s1 = State(name='s1')
         s2 = State(name='s2')
         c  = Condition()
         s1.add_transition_to(s2, c)
 
-        self.assertEqual( s2, s1._transitions[0].target )
+        self.assertEqual( s2, s1.listeners[c.listens_for][0].target )
 
     def test_find_next_triggered_transition(self):
         s = State(name='test state')
@@ -50,11 +36,11 @@ class StateTests(unittest.TestCase):
         s.add_transition_to( s2, ALWAYS_FALSE )
         s.add_transition_to( s3, ALWAYS_TRUE )
 
-        model = MagicMock()
-        result = s.find_next_triggered_transition( None, model )
+        model  = Model('test')
+        data   = { ALWAYS_TRUE.listens_for:'hello' }
+        result = s.find_next_triggered_transition( data, model )
 
-        self.assertEqual( 2, len( s._transitions ) )
-        self.assertEqual(s._transitions[1], result )
+        self.assertEqual(s3, result.target )
 
     def test_add_default_transition_to(self):
 
@@ -66,8 +52,9 @@ class StateTests(unittest.TestCase):
         s.add_transition_to(s3, ALWAYS_FALSE)
         s.add_default_transition_to(s2)
 
-        model  = MagicMock()
-        t      = s.find_next_triggered_transition(None,model)
+        model  = Model('test')
+        data   = { ALWAYS_TRUE.listens_for:'hello' }
+        t      = s.find_next_triggered_transition(data, model)
 
         self.assertEqual(s2, t.target)
 

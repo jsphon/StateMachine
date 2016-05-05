@@ -2,22 +2,18 @@
 
 from state_machine.exception import StateMachineException
 from state_machine.transition import Transition
+from collections import defaultdict
 
 class State( object ):
 
     def __init__( self, name='', default_transition=None ):
         self.name=name
-        self._transitions = []
+        #self._transitions = []
         self.default_transition = None
+        self.listeners = defaultdict(list)
 
     def __repr__(self):
         return 'State:%s'%self.name
-
-    def add_transition(self, transition ):
-        if transition.source!=self:
-            raise StateMachineException( 'transition source is not this state' )
-        self._transitions.append( transition )
-
 
     def add_default_transition_to(self, target):
         """
@@ -27,13 +23,13 @@ class State( object ):
         """
         self.default_transition = Transition(self, target, None)
 
-    def add_transition_to(self, target, conditions):
+    def add_transition_to(self, target, condition):
         """
         :param target: A State
-        :param conditions: An iterable of conditions
+        :param condition: A condition
         """
-        t = Transition( self, target, conditions )
-        self._transitions.append(t)
+        t = Transition( self, target, condition )
+        self.listeners[condition.listens_for].append(t)
 
     def start(self, data, model):#, state_input=None ):
         return self.on_start( data, model)#, state_input )
@@ -57,12 +53,19 @@ class State( object ):
 
     def find_next_triggered_transition(self, data, model ):
         """ Find the first triggered transition """
-        for transition in self._transitions:
-            model.logger.info( 'Testing %s',transition )
-            is_triggered = transition.is_triggered(data, model)
-            if is_triggered:
-                model.logger.info( 'Transition from %s to %s triggered'%(self,transition.target))
-                return transition
+
+        if data:
+
+            for data_stream, payload in data.items():
+                model.logger.info( '%s, %s', data_stream, payload)
+                transitions = self.listeners[data_stream]
+                model.logger.info( 'We have %i transitions'%len(transitions))
+                for t in transitions:
+                    model.logger.info('TEsting %s',t)
+                    if t.is_triggered(payload, model):
+                        model.logger.info( 'Returning %s',t)
+                        return t
+
         return self.default_transition
 
 

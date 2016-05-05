@@ -1,6 +1,9 @@
 
 class Condition( object ):
 
+    listens_for = None
+    name = ''
+
     def __init__( self, name='Condition' ):
         self.name = name
 
@@ -44,16 +47,6 @@ class CompositeAndCondition( Condition ):
     def is_triggered( self, data, model ):
         return all( c.is_triggered(data, model) for c in self.conditions)
 
-# class OppositeCondition( Condition ):
-#     """ Return the inverse of Condition """
-#
-#     def __init__(self, source):
-#         self.name = 'NOT(%s)'%source.name
-#         self.source=source
-#
-#     def is_triggered(self, data, model):
-#         r, _ = self.source.is_triggered( data, model )
-#         return not r, None
 
 ALWAYS_TRUE = AlwaysTrue()
 ALWAYS_FALSE = AlwaysFalse()
