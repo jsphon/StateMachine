@@ -11,6 +11,7 @@ A Python package for implementing finite state machines.
 ## Notes
 
 1 - States should represent actions.
+
 2 - Transitions should be lightweight triggers.
 
 ## FAQ
