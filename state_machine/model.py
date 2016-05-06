@@ -1,3 +1,4 @@
+from collections import defaultdict
 from state_machine.constants import CURRENT_STATE_NAME, CURRENT_STATE_COMMENT, CURRENT_STATE_INPUT, CURRENT_STATE_START_RESULT
 from state_machine.data import Data
 
@@ -5,9 +6,10 @@ from state_machine.data import Data
 class Model( object ):
     """ For storing state machine data """
 
-    def __init__(self, name, logger=None, data=None):
+    def __init__(self, name, logger=None, data=None, state_machine=None):
 
         self.name = name
+        self.state_machine = state_machine
         self._current_state  = None
         self._current_state_input = None
         self._current_state_start_result = None
@@ -18,7 +20,17 @@ class Model( object ):
             self.logger = logging.getLogger( 'default' )
             self.logger.setLevel( logging.INFO )
 
+        self.listeners = defaultdict(set)
+
         self.data = data or Data( name )
+
+    def add_listener(self, listener, event_name):
+        self.listeners[event_name].add( listener )
+
+    def send_event(self, event_name, data):
+        event_listeners = self.listeners[event_name]
+        for l in event_listeners:
+            l.state_machine.run(data,l)
 
     def recover_state(self, machine):
         """ Recover the state of the machine """

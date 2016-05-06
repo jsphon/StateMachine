@@ -61,7 +61,7 @@ class State( object ):
                 transitions = self.listeners[data_stream]
                 model.logger.info( 'We have %i transitions'%len(transitions))
                 for t in transitions:
-                    model.logger.info('TEsting %s',t)
+                    model.logger.info('Testing transition %s',t)
                     if t.is_triggered(payload, model):
                         model.logger.info( 'Returning %s',t)
                         return t
