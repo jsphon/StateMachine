@@ -31,10 +31,10 @@ class State( object ):
         t = Transition( self, target, condition )
         self.listeners[condition.listens_for].append(t)
 
-    def start(self, data, model):#, state_input=None ):
-        return self.on_start( data, model)#, state_input )
+    def start(self, data, model, state_input ):
+        return self.on_start( data, model, state_input )
 
-    def on_start(self, data, model):#, state_input=None ):
+    def on_start(self, data, model, state_input ):
         """ child classes can optionally extend this """
         pass
 
@@ -57,9 +57,9 @@ class State( object ):
         if data:
 
             for data_stream, payload in data.items():
-                model.logger.info( '%s, %s', data_stream, payload)
+                #model.logger.info( '%s, %s', data_stream, payload)
                 transitions = self.listeners[data_stream]
-                model.logger.info( 'We have %i transitions'%len(transitions))
+                #model.logger.info( 'We have %i transitions'%len(transitions))
                 for t in transitions:
                     model.logger.info('Testing transition %s',t)
                     if t.is_triggered(payload, model):
