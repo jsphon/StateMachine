@@ -55,15 +55,16 @@ class StateMachine( object ):
                 #model.logger.info( 'Leaving state %s for %s'%(model.current_state.name, transition.target.name))
                 model.current_state.end( data, model )
 
-                #model.logger.info( 'Starting state %s', transition.target.name )
+                model.logger.info( 'Starting state %s', transition.target.name )
                 #model.logger.info( 'input data: %s', str( transition ) )
-                
-                target_state_start_result = transition.target.start( data, model )
 
-                #model.logger.info( '%s started successfully with result: %s',transition_state.target.name,str(start_result))
+                target_state_input = model.current_state_start_result
+                target_state_start_result = transition.target.start( data, model, target_state_input )
+
+                model.logger.info( '%s started successfully with result: %s',transition.target.name,str(target_state_start_result))
                 #model.logger.info( 'Updating persistent state data')
 
-                model.set_state( transition.target, start_result=target_state_start_result, state_input=model.current_state_start_result )
+                model.set_state( transition.target, start_result=target_state_start_result, state_input=target_state_input )
 
                 self.run( data, model )
 

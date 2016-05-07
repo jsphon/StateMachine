@@ -83,27 +83,29 @@ class StateMachineTests(unittest.TestCase):
         #         -   no inventory
         #         -   has inventory
 
-        # SETUP
         sm = StateMachine( 'state machine 1' )
 
-        tgt       = State( 'tgt' )
-        tgt.start = lambda *args: 'start_result'
-        tgt.run   = MagicMock()
+        state_wait = State( 'Wait State' )
 
-        src = State( 'src' )
-        src.add_transition_to( tgt, ALWAYS_TRUE )
+        state_action = State('Action State')
+        state_action.on_start = lambda *arg, **kwargs: 'action result'
+
+        state_final = State('Final State')
+        state_final.on_start = lambda data, model, state_input:{'final state input':state_input}
+
+        state_wait.add_default_transition_to(state_action)
+        state_action.add_default_transition_to(state_final)
 
         model = Model( 'test_model' )
-        model.set_state(src, start_result='input')
+        model.set_state(state_wait)
 
         data = {ALWAYS_TRUE.listens_for:1}
         sm.run(data, model)
 
-        self.assertEqual(1, tgt.run.call_count)
-        self.assertEqual(data, tgt.run.call_args[0][0])
-        self.assertEqual(model, tgt.run.call_args[0][1])
-        self.assertEqual('start_result', model.current_state_start_result)
-        self.assertEqual('input', model.current_state_input)
+        model.logger.info( 'We are in state %s',model.current_state)
+        model.logger.info( 'State input ''%s''',model.current_state_input)
+        self.assertEqual( 'action result', model.current_state_input)
+        self.assertEqual( {'final state input':'action result'}, model.current_state_start_result)
 
     def test_run_splits_streams_correctly(self):
 
