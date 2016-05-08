@@ -6,9 +6,7 @@ Created on 24 May 2015
 import unittest
 
 from state_machine.exception import StateMachineException
-from state_machine.state import State
-from state_machine import Model
-from state_machine.transition import Transition
+from state_machine import Model, Event, State
 from state_machine.condition import ALWAYS_FALSE, ALWAYS_TRUE, Condition
 
 from mock import MagicMock
@@ -27,7 +25,7 @@ class StateTests(unittest.TestCase):
 
         self.assertEqual( s2, s1.listeners[c.listens_for][0].target )
 
-    def test_find_next_triggered_transition(self):
+    def test_next_transition(self):
         s = State(name='test state')
 
         s2 = State(name='s2')
@@ -36,9 +34,8 @@ class StateTests(unittest.TestCase):
         s.add_transition_to( s2, ALWAYS_FALSE )
         s.add_transition_to( s3, ALWAYS_TRUE )
 
-        model  = Model('test')
-        data   = { ALWAYS_TRUE.listens_for:'hello' }
-        result = s.find_next_triggered_transition( data, model )
+        event  = Event()
+        result = s.next_transition( event )
 
         self.assertEqual(s3, result.target )
 
@@ -52,9 +49,8 @@ class StateTests(unittest.TestCase):
         s.add_transition_to(s3, ALWAYS_FALSE)
         s.add_default_transition_to(s2)
 
-        model  = Model('test')
-        data   = { ALWAYS_TRUE.listens_for:'hello' }
-        t      = s.find_next_triggered_transition(data, model)
+        event  = Event()
+        t      = s.next_transition(event)
 
         self.assertEqual(s2, t.target)
 

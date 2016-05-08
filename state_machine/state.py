@@ -1,14 +1,13 @@
 
 
 from state_machine.exception import StateMachineException
-from state_machine.transition import Transition
+from state_machine.transition import Transition, DefaultTransition
 from collections import defaultdict
 
 class State( object ):
 
     def __init__( self, name='', default_transition=None ):
         self.name=name
-        #self._transitions = []
         self.default_transition = None
         self.listeners = defaultdict(list)
 
@@ -21,14 +20,14 @@ class State( object ):
         :param target:  the target state
         :return:
         """
-        self.default_transition = Transition(self, target, None)
+        self.default_transition = DefaultTransition(target)
 
     def add_transition_to(self, target, condition):
         """
         :param target: A State
         :param condition: A condition
         """
-        t = Transition( self, target, condition )
+        t = Transition(target, condition)
         self.listeners[condition.listens_for].append(t)
 
     def start(self, data, model, state_input ):
@@ -52,19 +51,20 @@ class State( object ):
         pass
 
     def find_next_triggered_transition(self, data, model ):
-        """ Find the first triggered transition """
+        """
+        Deprecated to next_transition
+        """
+        raise DeprecationWarning()
+        raise NotImplementedError()
 
-        if data:
+    def next_transition(self, event):
 
-            for data_stream, payload in data.items():
-                #model.logger.info( '%s, %s', data_stream, payload)
-                transitions = self.listeners[data_stream]
-                #model.logger.info( 'We have %i transitions'%len(transitions))
-                for t in transitions:
-                    model.logger.info('Testing transition %s',t)
-                    if t.is_triggered(payload, model):
-                        model.logger.info( 'Returning %s',t)
-                        return t
+        transitions = self.listeners[event.name]
+        for t in transitions:
+            #model.logger.info('Testing transition %s',t)
+            if t.is_triggered(event):
+                #model.logger.info( 'Returning %s',t)
+                return t
 
         return self.default_transition
 
