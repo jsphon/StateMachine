@@ -6,9 +6,8 @@ from collections import defaultdict
 
 class State( object ):
 
-    def __init__( self, name='', default_transition=None ):
+    def __init__( self, name=''):
         self.name=name
-        self.default_transition = None
         self.listeners = defaultdict(list)
 
     def __repr__(self):
@@ -30,21 +29,21 @@ class State( object ):
         t = Transition(target, condition)
         self.listeners[condition.listens_for].append(t)
 
-    def start(self, data, model, state_input ):
-        return self.on_start( data, model, state_input )
+    def start(self, event):
+        return self.on_start(event)
 
-    def on_start(self, data, model, state_input ):
+    def on_start(self, event):
         """ child classes can optionally extend this """
         pass
 
-    def end(self, data, model ):
-        self.on_end( data, model )
+    def end(self, event):
+        self.on_end( event)
 
-    def on_end(self, data, model ):
+    def on_end(self, event ):
         """ child classes can optionally extend this """
         pass
 
-    def run(self, data, model):
+    def run(self, event):
         """
         For doing something everytime the machine ticks, such as storing state
         """
