@@ -9,6 +9,7 @@ class State( object ):
     def __init__( self, name=''):
         self.name=name
         self.listeners = defaultdict(list)
+        self.default_transition=None
 
     def __repr__(self):
         return 'State:%s'%self.name
