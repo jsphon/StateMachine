@@ -1,8 +1,8 @@
 import unittest
 
 import state_machine.condition as condition
-import state_machine.event as event
-from mock import MagicMock
+import state_machine.events.event as event
+
 
 class ConditionTests(unittest.TestCase):
 
@@ -30,13 +30,13 @@ class ConditionTests(unittest.TestCase):
 
     def test_CompositeAndCondition(self):
         cond = condition.CompositeAndCondition( ( condition.ALWAYS_FALSE, condition.ALWAYS_TRUE ) )
-        self.assertFalse( cond.is_triggered(event) )
+        self.assertFalse(cond.is_triggered(event))
 
         cond = condition.CompositeAndCondition( ( condition.ALWAYS_TRUE, condition.ALWAYS_FALSE ) )
-        self.assertFalse( cond.is_triggered(event) )
+        self.assertFalse(cond.is_triggered(event))
 
         cond = condition.CompositeAndCondition( ( condition.ALWAYS_FALSE, condition.ALWAYS_FALSE ) )
-        self.assertFalse( cond.is_triggered(event) )
+        self.assertFalse(cond.is_triggered(event))
 
         cond = condition.CompositeAndCondition( ( condition.ALWAYS_TRUE, condition.ALWAYS_TRUE ) )
-        self.assertTrue( cond.is_triggered(event) )
+        self.assertTrue(cond.is_triggered(event))

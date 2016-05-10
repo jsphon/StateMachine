@@ -1,7 +1,7 @@
 import unittest
 
-import state_machine.event as event
-import logging
+import state_machine.events.event as event
+
 
 class EventTests(unittest.TestCase):
 
