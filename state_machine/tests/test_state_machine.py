@@ -28,11 +28,11 @@ class StateMachineTests(unittest.TestCase):
         with self.assertRaises( StateMachineException ):
             sm.add_state( state )
 
-    def test_handle_event(self):
+    def test_notify(self):
         sm = StateMachine( 'test machine' )
-        sm.handle_event( Event() )
+        sm.notify( Event() )
 
-    def test_handle_event_simple(self):
+    def test_notify_simple(self):
         '''
         A simple example of using a state machine
         '''
@@ -48,13 +48,13 @@ class StateMachineTests(unittest.TestCase):
         evt  = Event(ALWAYS_TRUE.listens_for)
 
         # TEST
-        sm.handle_event(evt)
+        sm.notify(evt)
 
         # VERIFY
         self.assertEqual(tgt, sm.current_state)
 
 
-    def test_handle_event_handles_start_result(self):
+    def test_notify_handles_start_result(self):
         # # Need to be able to check that if on_start returns an event, then we handle it as well
         # e.g.
         #     order a pizza
@@ -76,14 +76,14 @@ class StateMachineTests(unittest.TestCase):
         sm.set_state(state_wait)
 
         evt = Event()
-        sm.handle_event(evt)
+        sm.notify(evt)
 
         sm.logger.info( 'We are in state %s',sm.current_state)
         self.assertEqual( state_final, sm.current_state)
         self.assertEqual('action', state_final.on_start.call_args[0][0].name)
         self.assertEqual('hello', state_final.on_start.call_args[0][0].payload)
 
-    def test_run_splits_streams_correctly(self):
+    def test_notify_splits_streams_correctly(self):
 
         src  = State('src')
         tgt1 = State('tgt1')
@@ -102,17 +102,17 @@ class StateMachineTests(unittest.TestCase):
 
         # Test1
         sm.set_state(src)
-        sm.handle_event(Event('stream1'))
+        sm.notify(Event('stream1'))
         self.assertEqual(tgt1, sm.current_state)
 
         # Test2
         sm.set_state(src)
-        sm.handle_event(Event('stream2'))
+        sm.notify(Event('stream2'))
         self.assertEqual(tgt2, sm.current_state)
 
         # Test3
         sm.set_state(src)
-        sm.handle_event(Event())
+        sm.notify(Event())
         self.assertEqual(src, sm.current_state)
 
 

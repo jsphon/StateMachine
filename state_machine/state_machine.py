@@ -3,6 +3,7 @@ A simple Event Driven Finite State Machine class
 
 '''
 
+from state_machine.events import Observable, Observer
 from state_machine.exception import StateMachineException
 import traceback
 from state_machine.data import Data
@@ -15,7 +16,7 @@ CURRENT_STATE_INPUT        = 'current_state_input'
 CURRENT_STATE_START_RESULT = 'current_state_start_result'
 
 
-class StateMachine( object ):
+class StateMachine( Observable ):
 
     def __init__(self, name='',
                         logger=None,
@@ -54,15 +55,15 @@ class StateMachine( object ):
     def set_start_state(self, start_state):
         self._start_state = start_state
 
-    def handle_event(self, event):
+    def notify(self, event):
         try:
-            self._handle_event(event)
+            self._notify(event)
         except Exception as e:
             msg = 'Failed to run state %s\n'%self._current_state
             msg += traceback.format_exc()
             self.logger.error( msg )
 
-    def _handle_event(self, event):
+    def _notify(self, event):
 
         if self._current_state:
             self._current_state.run(event)
@@ -82,7 +83,7 @@ class StateMachine( object ):
                 self.set_state(transition.target)
 
                 if target_start_event:
-                    self.handle_event(target_start_event)
+                    self.notify(target_start_event)
 
         else:
             msg = 'State Machine has no current state'

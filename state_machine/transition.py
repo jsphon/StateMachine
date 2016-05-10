@@ -15,6 +15,7 @@ class Transition( object ):
     def is_triggered(self, event):
         return self.condition.is_triggered(event)
 
+
 class DefaultTransition(Transition):
 
     def __init__(self, target_state):
