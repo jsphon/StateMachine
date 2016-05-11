@@ -128,8 +128,8 @@ class StateMachineTests(unittest.TestCase):
 
         class CustomStateClass(State):
 
-            def __init__(self,name, arg0, arg1):
-                super(CustomStateClass, self).__init__(name)
+            def __init__(self, name, machine, arg0, arg1):
+                super(CustomStateClass, self).__init__(name, machine)
                 self.arg0=arg0
                 self.arg1=arg1
 

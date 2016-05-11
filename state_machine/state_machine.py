@@ -40,7 +40,7 @@ class StateMachine( Observable ):
         self.data = data or Data( name )
 
     def create_state(self, name, StateClass=State, *args, **kwargs):
-        new_state = StateClass(name, *args, **kwargs)
+        new_state = StateClass(name, self, *args, **kwargs)
         self.add_state(new_state)
         return new_state
 
