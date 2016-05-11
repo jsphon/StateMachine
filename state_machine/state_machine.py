@@ -5,6 +5,7 @@ A simple Event Driven Finite State Machine class
 
 from state_machine.events import Observable, Observer
 from state_machine.exception import StateMachineException
+from state_machine.state import State
 import traceback
 from state_machine.data import Data
 
@@ -37,6 +38,11 @@ class StateMachine( Observable ):
             self.logger.setLevel( logging.INFO )
 
         self.data = data or Data( name )
+
+    def create_state(self, name, StateClass=State, *args, **kwargs):
+        new_state = StateClass(name, *args, **kwargs)
+        self.add_state(new_state)
+        return new_state
 
     def add_state(self,new_state):
         if new_state.name in self.states:

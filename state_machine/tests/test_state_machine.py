@@ -115,6 +115,33 @@ class StateMachineTests(unittest.TestCase):
         sm.notify(Event())
         self.assertEqual(src, sm.current_state)
 
+    def test_create_state(self):
+
+        sm        = StateMachine('test')
+        new_state = sm.create_state('new state')
+
+        self.assertIsInstance(new_state, State)
+        self.assertEqual('new state', new_state.name)
+        self.assertEqual(new_state, sm.states['new state'])
+
+    def test_create_state_with_custom_class(self):
+
+        class CustomStateClass(State):
+
+            def __init__(self,name, arg0, arg1):
+                super(CustomStateClass, self).__init__(name)
+                self.arg0=arg0
+                self.arg1=arg1
+
+        sm        = StateMachine('test')
+        new_state = sm.create_state('new state', CustomStateClass, 0, arg1=1)
+
+        self.assertIsInstance(new_state, CustomStateClass)
+        self.assertEqual('new state', new_state.name)
+        self.assertEqual(0, new_state.arg0)
+        self.assertEqual(1, new_state.arg1)
+        self.assertEqual(new_state, sm.states['new state'])
+
 
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.testName']

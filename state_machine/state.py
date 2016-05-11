@@ -6,8 +6,9 @@ from collections import defaultdict
 
 class State( object ):
 
-    def __init__( self, name=''):
+    def __init__(self, name, machine):
         self.name=name
+        self.machine=machine
         self.listeners = defaultdict(list)
         self.default_transition=None
 
@@ -68,6 +69,11 @@ class State( object ):
 
         return self.default_transition
 
+    def notify_observers(self, event):
+        '''
+        Notify the parent machine's observers
+        '''
+        self.machine.notify_observers(event)
 
 class FinalState(State):
 

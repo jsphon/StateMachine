@@ -6,7 +6,7 @@ Created on 24 May 2015
 import unittest
 
 from state_machine.exception import StateMachineException
-from state_machine import Model, Event, State
+from state_machine import Model, Event, State, StateMachine
 from state_machine.condition import ALWAYS_FALSE, ALWAYS_TRUE, Condition
 
 from mock import MagicMock
@@ -15,7 +15,22 @@ from mock import MagicMock
 class StateTests(unittest.TestCase):
 
     def test___init__(self):
-        s = State(name='test state')
+        m = StateMachine()
+        s = State('test state', m)
+
+        self.assertEqual('test state', s.name)
+        self.assertEqual(m, s.machine)
+
+    def test_notify_observers(self):
+        m = StateMachine()
+        m.notify_observers = MagicMock()
+        s = State('test state', m)
+
+        e = Event()
+        s.notify_observers(e)
+
+        self.assertEqual(1, m.notify_observers.call_count)
+        self.assertEqual(e, m.notify_observers.call_args[0][0])
 
     def test_add_transition_to(self):
         s1 = State(name='s1')
