@@ -15,6 +15,13 @@ class State( object ):
     def __repr__(self):
         return 'State:%s'%self.name
 
+    @property
+    def logger(self):
+        return self.machine.logger
+
+    def notify_observers(self, event):
+        self.machine.notify_observers(event)
+
     def add_default_transition_to(self, target):
         """
         Add a default transition to target
