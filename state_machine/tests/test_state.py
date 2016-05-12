@@ -33,18 +33,21 @@ class StateTests(unittest.TestCase):
         self.assertEqual(e, m.notify_observers.call_args[0][0])
 
     def test_add_transition_to(self):
-        s1 = State(name='s1')
-        s2 = State(name='s2')
+        m  = StateMachine()
+        s1 = m.create_state(name='s1')
+        s2 = m.create_state(name='s2')
         c  = Condition()
         s1.add_transition_to(s2, c)
 
         self.assertEqual( s2, s1.listeners[c.listens_for][0].target )
 
     def test_next_transition(self):
-        s = State(name='test state')
 
-        s2 = State(name='s2')
-        s3 = State(name='s3')
+        m = StateMachine()
+        s = m.create_state(name='test state')
+
+        s2 = m.create_state(name='s2')
+        s3 = m.create_state(name='s3')
 
         s.add_transition_to( s2, ALWAYS_FALSE )
         s.add_transition_to( s3, ALWAYS_TRUE )
@@ -56,10 +59,11 @@ class StateTests(unittest.TestCase):
 
     def test_add_default_transition_to(self):
 
-        s = State(name='test state')
+        m = StateMachine()
+        s = m.create_state(name='test state')
 
-        s2 = State(name='should get here')
-        s3 = State(name='should not get here')
+        s2 = m.create_state(name='should get here')
+        s3 = m.create_state(name='should not get here')
 
         s.add_transition_to(s3, ALWAYS_FALSE)
         s.add_default_transition_to(s2)

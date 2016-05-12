@@ -39,8 +39,8 @@ class StateMachineTests(unittest.TestCase):
 
         sm = StateMachine( 'state machine 1' )
 
-        src = State( 'src' )
-        tgt = State( 'tgt' )
+        src = State( 'src', sm )
+        tgt = State( 'tgt', sm )
 
         src.add_transition_to( tgt, ALWAYS_TRUE )
 
@@ -61,18 +61,20 @@ class StateMachineTests(unittest.TestCase):
         #     get back a pizza order event
         #     handle the pizza order event
 
-        state_wait = State( 'Wait State' )
+        sm = StateMachine()
 
-        state_action = State('Action State')
+        state_wait = State( 'Wait State', sm )
+
+        state_action = State('Action State', sm)
         state_action.on_start = lambda event: Event(name='action',payload='hello')
 
-        state_final = State('Final State')
+        state_final = State('Final State', sm)
         state_final.on_start = MagicMock()
 
         state_wait.add_default_transition_to(state_action)
         state_action.add_default_transition_to(state_final)
 
-        sm = StateMachine( 'state machine 1' )
+
         sm.set_state(state_wait)
 
         evt = Event()
@@ -85,9 +87,11 @@ class StateMachineTests(unittest.TestCase):
 
     def test_notify_splits_streams_correctly(self):
 
-        src  = State('src')
-        tgt1 = State('tgt1')
-        tgt2 = State('tgt2')
+        sm = StateMachine('test machine')
+
+        src  = State('src', sm)
+        tgt1 = State('tgt1', sm)
+        tgt2 = State('tgt2', sm)
 
         c1  = AlwaysTrue()
         c1.listens_for = 'stream1'
@@ -97,8 +101,6 @@ class StateMachineTests(unittest.TestCase):
 
         src.add_transition_to( tgt1, c1 )
         src.add_transition_to( tgt2, c2 )
-
-        sm = StateMachine('test machine')
 
         # Test1
         sm.set_state(src)
