@@ -1,9 +1,12 @@
 
 class Transition( object ):
 
-    def __init__( self, target_state, condition ):
+    def __init__( self, source_state, target_state, trigger=None, guard=None, action=None ):
+        self.source = source_state
         self.target = target_state
-        self.condition = condition
+        self.trigger = trigger
+        self.guard = guard
+        self.action = action
 
     def __repr__(self):
         condition_description = self.condition_description()
@@ -13,7 +16,14 @@ class Transition( object ):
         return 'Condition:(%s)'%self.condition.name
 
     def is_triggered(self, event):
-        return self.condition.is_triggered(event)
+
+        if self.trigger and event.name!=self.trigger:
+            return False
+
+        if self.guard:
+            return self.guard(event, self.source)
+
+        return True
 
 
 class DefaultTransition(Transition):

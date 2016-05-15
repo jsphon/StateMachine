@@ -4,12 +4,85 @@ Created on 24 May 2015
 @author: jon
 '''
 import unittest
-
-from state_machine.exception import StateMachineException
-from state_machine import Model, Event, State, StateMachine
-from state_machine.condition import ALWAYS_FALSE, ALWAYS_TRUE, Condition
-
+from state_machine import Event, State, StateMachine, PseudoState
+from state_machine.state import BaseState
 from mock import MagicMock
+
+class BaseStateTests(unittest.TestCase):
+
+    def test___init__(self):
+        m = StateMachine()
+        bs = BaseState( 'name', m)
+        self.assertIsInstance(bs, BaseState)
+
+    def test_on_start(self):
+
+        # SETUP
+        m = StateMachine()
+        bs = BaseState( 'name', m)
+        bs.on_start = MagicMock()
+
+        #TEST
+        e = Event()
+        bs.start(e)
+
+        #VERIFY
+        bs.on_start.assert_called_once_with(e, bs)
+
+    def test_on_end(self):
+
+        # SETUp
+        m = StateMachine()
+        bs = BaseState( 'name', m)
+        bs.on_end = MagicMock()
+
+        #TEST
+        e = Event()
+        bs.end(e)
+
+        #VERIFY
+        bs.on_end.assert_called_once_with(e, bs)
+
+
+
+
+
+
+class PseudoStateTests(unittest.TestCase):
+
+    def test___init__(self):
+
+        m = StateMachine()
+        s = PseudoState('ps', m)
+        self.assertIsInstance(s, PseudoState)
+
+    def test_add_transition_to(self):
+        m   = StateMachine()
+        ps  = m.create_state('ps', PseudoState)
+        tgt1 = m.create_state('tgt1')
+
+        g1 = lambda event, state: True
+        ps.add_transition_to(tgt1, guard=g1)
+
+        self.assertEqual(1, len(ps.transitions))
+        self.assertEqual(tgt1, ps.transitions[0].target)
+
+    def test_next_transition(self):
+
+        m   = StateMachine()
+        ps  = m.create_state('ps', PseudoState)
+        tgt1 = m.create_state('tgt1')
+        tgt2 = m.create_state('tgt2')
+
+        g1 = lambda event, state: True
+        ps.add_transition_to(tgt1, guard=g1)
+
+        g2 = lambda event, state: False
+        ps.add_transition_to(tgt2, guard=g2)
+
+        e = Event()
+        t = ps.next_transition(e)
+        self.assertEqual(tgt1, t.target)
 
 
 class StateTests(unittest.TestCase):
@@ -36,10 +109,20 @@ class StateTests(unittest.TestCase):
         m  = StateMachine()
         s1 = m.create_state(name='s1')
         s2 = m.create_state(name='s2')
-        c  = Condition()
-        s1.add_transition_to(s2, c)
 
-        self.assertEqual( s2, s1.listeners[c.listens_for][0].target )
+        s1.add_transition_to(s2, 'test event')
+
+        self.assertEqual( s2, s1.listeners['test event'][0].target )
+
+    def test_add_transition_to_without_params(self):
+        m  = StateMachine()
+        s1 = m.create_state(name='s1')
+        s2 = m.create_state(name='s2')
+
+        s1.add_transition_to(s2)
+
+        self.assertEqual( 0, len( s1.listeners ) )
+        self.assertEqual( s2, s1.default_transition.target )
 
     def test_next_transition(self):
 
@@ -49,15 +132,15 @@ class StateTests(unittest.TestCase):
         s2 = m.create_state(name='s2')
         s3 = m.create_state(name='s3')
 
-        s.add_transition_to( s2, ALWAYS_FALSE )
-        s.add_transition_to( s3, ALWAYS_TRUE )
+        s.add_transition_to( s2, 'ignore' )
+        s.add_transition_to( s3, 'trigger' )
 
-        event  = Event()
+        event  = Event('trigger')
         result = s.next_transition( event )
 
         self.assertEqual(s3, result.target )
 
-    def test_add_default_transition_to(self):
+    def test_transition_to_default(self):
 
         m = StateMachine()
         s = m.create_state(name='test state')
@@ -65,10 +148,10 @@ class StateTests(unittest.TestCase):
         s2 = m.create_state(name='should get here')
         s3 = m.create_state(name='should not get here')
 
-        s.add_transition_to(s3, ALWAYS_FALSE)
-        s.add_default_transition_to(s2)
+        s.add_transition_to(s3, 'test event')
+        s.add_transition_to(s2)
 
-        event  = Event()
+        event  = Event('any event')
         t      = s.next_transition(event)
 
         self.assertEqual(s2, t.target)

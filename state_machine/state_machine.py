@@ -5,7 +5,7 @@ A simple Event Driven Finite State Machine class
 
 from state_machine.events import Observable, Observer
 from state_machine.exception import StateMachineException
-from state_machine.state import State
+from state_machine.state import State, PseudoState
 import traceback
 from state_machine.data import Data
 
@@ -21,14 +21,14 @@ class StateMachine( Observable ):
 
     def __init__(self, name='',
                         logger=None,
-                        start_state = None,
+                        initial_state = None,
                         data = None,
                         ):
 
         super(StateMachine,self).__init__()
 
         self.name           = name
-        self._start_state   = None
+        self.initial_state   = initial_state
         self.states         = {}
 
         self._current_state = None
@@ -40,6 +40,9 @@ class StateMachine( Observable ):
             self.logger.setLevel( logging.INFO )
 
         self.data = data or Data( name )
+
+    def reset(self):
+        self.set_state(self.initial_state)
 
     def create_state(self, name, StateClass=State, *args, **kwargs):
         new_state = StateClass(name, self, *args, **kwargs)
@@ -58,10 +61,10 @@ class StateMachine( Observable ):
 
     @property
     def start_state(self):
-        return self._start_state
+        return self.initial_state
     
     def set_start_state(self, start_state):
-        self._start_state = start_state
+        self.initial_state = start_state
 
     def notify(self, event):
         try:
@@ -77,21 +80,17 @@ class StateMachine( Observable ):
             self._current_state.run(event)
             transition = self._current_state.next_transition(event)
             if transition:
-                #model.logger.info( 'Leaving state %s for %s'%(model.current_state.name, transition.target.name))
                 self._current_state.end(event)
 
                 self.logger.info( 'Starting state %s', transition.target.name )
-                #model.logger.info( 'input data: %s', str( transition ) )
-
-                target_start_event = transition.target.start(event)
-
-                self.logger.info( '%s started successfully returning event: %s',transition.target.name,target_start_event)
-                #model.logger.info( 'Updating persistent state data')
 
                 self.set_state(transition.target)
 
-                if target_start_event:
-                    self.notify(target_start_event)
+                transition.target.start(event)
+
+                if isinstance(transition.target, PseudoState):
+                    self.logger.info('Target is a PseudoState')
+                    self.notify(event)
 
         else:
             msg = 'State Machine has no current state'
