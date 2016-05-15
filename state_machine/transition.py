@@ -9,11 +9,7 @@ class Transition( object ):
         self.action = action
 
     def __repr__(self):
-        condition_description = self.condition_description()
-        return 'Transition to %s, %s'%(self.target,condition_description)
-
-    def condition_description(self):
-        return 'Condition:(%s)'%self.condition.name
+        return 'Transition from %s to %s'%(self.source,self.target)
 
     def is_triggered(self, event):
 
