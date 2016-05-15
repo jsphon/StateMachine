@@ -110,12 +110,13 @@ class StateTests(unittest.TestCase):
         s1 = m.create_state(name='s1')
         s2 = m.create_state(name='s2')
 
-        s1.add_transition_to(s2, 'test event')
+        s1.add_transition_to(s2, 'test event...')
 
-        self.assertEqual( s2, s1.listeners['test event'][0].target )
+        self.assertEqual( s2, s1.listeners['test event...'][0].target )
 
     def test_add_transition_to_without_params(self):
         m  = StateMachine()
+        m.logger.info(m.states)
         s1 = m.create_state(name='s1')
         s2 = m.create_state(name='s2')
 

@@ -53,38 +53,6 @@ class StateMachineTests(unittest.TestCase):
         # VERIFY
         self.assertEqual(tgt, sm.current_state)
 
-
-    # def test_notify_handles_start_result(self):
-    #     # # Need to be able to check that if on_start returns an event, then we handle it as well
-    #     # e.g.
-    #     #     order a pizza
-    #     #     get back a pizza order event
-    #     #     handle the pizza order event
-    #
-    #     sm = StateMachine()
-    #
-    #     state_wait = State( 'Wait State', sm )
-    #
-    #     state_action = State('Action State', sm)
-    #     state_action.on_start = lambda event: Event(name='action',payload='hello')
-    #
-    #     state_final = State('Final State', sm)
-    #     state_final.on_start = MagicMock()
-    #
-    #     state_wait.add_default_transition_to(state_action)
-    #     state_action.add_default_transition_to(state_final)
-    #
-    #     sm.initial_state = state_wait
-    #     sm.reset()
-    #
-    #     evt = Event()
-    #     sm.notify(evt)
-    #
-    #     sm.logger.info( 'We are in state %s',sm.current_state)
-    #     self.assertEqual( state_final, sm.current_state)
-    #     self.assertEqual('action', state_final.on_start.call_args[0][0].name)
-    #     self.assertEqual('hello', state_final.on_start.call_args[0][0].payload)
-
     def test_notify_splits_streams_correctly(self):
 
         sm = StateMachine('test machine')
@@ -129,6 +97,69 @@ class StateMachineTests(unittest.TestCase):
         sm.notify(e)
 
         self.assertEqual(tgt, sm.current_state)
+
+    def test_notify_with_PseudoState_can_store_vars(self):
+        '''
+        Test that on_start can store data in vars.
+        '''
+
+        def on_start(event, state):
+            state.vars['payload']=event.payload
+
+        sm = StateMachine('test machine')
+
+        src  = sm.create_state('src')
+        ps   = sm.create_state('ps', PseudoState)
+
+        src.add_transition_to( ps )
+        ps.on_start = on_start
+
+        sm.set_state(src)
+
+        # Test1
+        e = Event('test', 'payload')
+        sm.notify(e)
+
+        #self.assertEqual(tgt, sm.current_state)
+        self.assertEqual('payload', ps.vars['payload'])
+
+    def test_notify_with_PseudoState_can_make_choice(self):
+        '''
+        Test that pseudo choice can make a choice using on_start result
+        '''
+
+        def on_start(event, state):
+            state.vars['payload']=event.payload
+
+        sm = StateMachine('test machine')
+
+        src  = sm.create_state('src')
+        ps   = sm.create_state('ps', PseudoState)
+        tgt1 = sm.create_state('tgt1')
+        tgt2 = sm.create_state('tgt2')
+
+        src.add_transition_to(ps)
+
+        ps.on_start = on_start
+        guard1 = lambda evt, st: st.vars['payload']=='tgt1'
+        ps.add_transition_to(tgt1, guard=guard1)
+
+        guard2 = lambda evt, st: st.vars['payload']=='tgt2'
+        ps.add_transition_to(tgt2, guard=guard2)
+
+        # Test1
+        sm.set_state(src)
+        e = Event('test', 'tgt1')
+        sm.notify(e)
+        self.assertEqual(tgt1, sm.current_state)
+
+        # Test2
+        sm.set_state(src)
+        e = Event('test', 'tgt2')
+        sm.notify(e)
+        self.assertEqual(tgt2, sm.current_state)
+
+
 
     def test_create_state(self):
 
