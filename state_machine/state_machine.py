@@ -44,7 +44,9 @@ class StateMachine( Observable ):
     def reset(self):
         self.set_state(self.initial_state)
 
-    def create_state(self, name, StateClass=State, *args, **kwargs):
+    def create_state(self, name, StateClass=None, *args, **kwargs):
+        StateClass = StateClass or State
+        self.logger.info('Creating state of type %s',StateClass)
         new_state = StateClass(name, self, *args, **kwargs)
         self.add_state(new_state)
         return new_state
@@ -104,30 +106,3 @@ class StateMachine( Observable ):
         }
         self.data.set_multi( **kwargs )
         self._current_state = state
-
-
-
-
-#
-# Pondering how to get info to condition in elegant manner
-'''
-
-    Order Placed Event
-    State receives order placed event
-    State listens for order to be filled
-
-    How about:
-        When state starts listening, it modifies the condition to listen for the order id
-        When the state ends, set the order id to None (for safety, not necessary)
-
-    Pros:
-        Involves sending less data to transition/condition
-        Will keep the conditions cleaner.
-        Can probably build a chart out of this
-
-    Cons:
-        A little more complexity in state
-        Will need to keep track of the transition/condition in state
-
-
-'''
