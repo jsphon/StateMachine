@@ -40,6 +40,11 @@ class StateMachine( Observable ):
             self.logger.setLevel( logging.INFO )
 
         self.data = data or Data( name )
+        self._vars = {}
+
+    @property
+    def vars(self):
+        return self._vars
 
     def reset(self):
         self.set_state(self.initial_state)
