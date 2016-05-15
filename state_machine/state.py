@@ -6,6 +6,8 @@ from collections import defaultdict
 
 class State( object ):
 
+    start_event = None
+
     def __init__(self, name, machine):
         self.name=name
         self.machine=machine
@@ -39,6 +41,7 @@ class State( object ):
         self.listeners[condition.listens_for].append(t)
 
     def start(self, event):
+        self.start_event=event
         return self.on_start(event)
 
     def on_start(self, event):
@@ -58,13 +61,6 @@ class State( object ):
         """
         pass
 
-    def find_next_triggered_transition(self, data, model ):
-        """
-        Deprecated to next_transition
-        """
-        raise DeprecationWarning()
-        raise NotImplementedError()
-
     def next_transition(self, event):
 
         transitions = self.listeners[event.name]
@@ -76,11 +72,6 @@ class State( object ):
 
         return self.default_transition
 
-    def notify_observers(self, event):
-        '''
-        Notify the parent machine's observers
-        '''
-        self.machine.notify_observers(event)
 
 class FinalState(State):
 

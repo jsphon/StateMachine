@@ -73,6 +73,18 @@ class StateTests(unittest.TestCase):
 
         self.assertEqual(s2, t.target)
 
+    def test_start_stores_event(self):
+
+        m = StateMachine()
+        s = m.create_state(name='test state')
+
+        e = Event()
+        s.start(e)
+
+        self.assertEqual(e, s.start_event)
+
+
+
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.testName']
     unittest.main()

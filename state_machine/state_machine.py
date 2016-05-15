@@ -25,6 +25,8 @@ class StateMachine( Observable ):
                         data = None,
                         ):
 
+        super(StateMachine,self).__init__()
+
         self.name           = name
         self._start_state   = None
         self.states         = {}
@@ -83,7 +85,7 @@ class StateMachine( Observable ):
 
                 target_start_event = transition.target.start(event)
 
-                self.logger.info( '%s started successfully with result: %s',transition.target.name,target_start_event)
+                self.logger.info( '%s started successfully returning event: %s',transition.target.name,target_start_event)
                 #model.logger.info( 'Updating persistent state data')
 
                 self.set_state(transition.target)
