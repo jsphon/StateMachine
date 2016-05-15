@@ -26,6 +26,20 @@ class Observable(object):
             observer.notify(event)
 
 
+class DelayedObservable(Observable):
+
+    def __init__(self):
+        super(DelayedObservable,self).__init__()
+        self.queue=[]
+
+    def notify_observers(self, event):
+        self.queue.append(event)
+
+    def flush(self):
+        while self.queue:
+            event = self.queue.pop(0)
+            super(DelayedObservable,self).notify_observers(event)
+
 class Observer(object):
 
     def notify(self, event):

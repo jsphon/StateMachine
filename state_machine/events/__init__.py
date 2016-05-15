@@ -1,2 +1,2 @@
 from .event import Event
-from .observer import Observable, Observer
+from .observer import Observable, Observer, DelayedObservable
