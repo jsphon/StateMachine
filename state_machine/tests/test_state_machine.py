@@ -212,13 +212,13 @@ class Examples(unittest.TestCase):
 
         def handle_data(event, state):
             state.logger.info( 'Received data %s', event.payload)
-            state.called=True
+            state.vars['call_count']+=1
 
         client = StateMachine()
         server.register_observer('data', client)
         client_state = client.create_state('wait for data')
         client_state.on_run = handle_data
-        client_state.called = False
+        client_state.vars['call_count'] = 0
 
         client.initial_state = client_state
         client.reset()
@@ -228,7 +228,12 @@ class Examples(unittest.TestCase):
         server.notify(e)
 
         # Verify
-        self.assertTrue(client_state.called)
+        self.assertEqual(1, client_state.vars['call_count'])
+
+        # Test Again!
+        server.notify(e)
+        self.assertEqual(2, client_state.vars['call_count'])
+
 
 
 if __name__ == "__main__":
