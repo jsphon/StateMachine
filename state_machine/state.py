@@ -13,6 +13,7 @@ class BaseState( object ):
 
         self.on_start = None
         self.on_end = None
+        self.on_run = None
         self._vars = {}
 
     def __repr__(self):
@@ -42,15 +43,13 @@ class BaseState( object ):
             self.on_start(event,self)
 
     def end(self, event):
-        self._vars.clear()
         if self.on_end:
             self.on_end(event, self)
+        self._vars.clear()
 
     def run(self, event):
-        """
-        For doing something everytime the machine ticks, such as storing state
-        """
-        pass
+        if self.on_run:
+            self.on_run(event, self)
 
     def next_transition(self, event):
         pass

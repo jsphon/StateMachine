@@ -159,8 +159,6 @@ class StateMachineTests(unittest.TestCase):
         sm.notify(e)
         self.assertEqual(tgt2, sm.current_state)
 
-
-
     def test_create_state(self):
 
         sm        = StateMachine('test')
@@ -187,6 +185,50 @@ class StateMachineTests(unittest.TestCase):
         self.assertEqual(0, new_state.arg0)
         self.assertEqual(1, new_state.arg1)
         self.assertEqual(new_state, sm.states['new state'])
+
+class Examples(unittest.TestCase):
+
+    def test_inter_machine_communication(self):
+        '''
+        Create two state machines
+         - server
+         - client
+        client listens to server using register_observer
+        when server sends a data event, client gets notified.
+
+
+        '''
+
+        def send_data(event, state):
+            state.logger.info( 'Server sending data' )
+            e = Event('data', 'hello world')
+            state.notify_observers(e)
+
+        server       = StateMachine()
+        server_state = server.create_state('do something')
+        server_state.on_run = send_data
+        server.initial_state = server_state
+        server.reset()
+
+        def handle_data(event, state):
+            state.logger.info( 'Received data %s', event.payload)
+            state.called=True
+
+        client = StateMachine()
+        server.register_observer('data', client)
+        client_state = client.create_state('wait for data')
+        client_state.on_run = handle_data
+        client_state.called = False
+
+        client.initial_state = client_state
+        client.reset()
+
+        # Test
+        e = Event('tick')
+        server.notify(e)
+
+        # Verify
+        self.assertTrue(client_state.called)
 
 
 if __name__ == "__main__":
