@@ -3,7 +3,7 @@ A simple Event Driven Finite State Machine class
 
 '''
 
-from state_machine.events import Observable, Observer
+from state_machine.events import DelayedObservable
 from state_machine.exception import StateMachineException
 from state_machine.state import State, PseudoState
 import traceback
@@ -17,7 +17,7 @@ CURRENT_STATE_INPUT        = 'current_state_input'
 CURRENT_STATE_START_RESULT = 'current_state_start_result'
 
 
-class StateMachine( Observable ):
+class StateMachine(DelayedObservable):
 
     def __init__(self, name='',
                         logger=None,
@@ -96,9 +96,11 @@ class StateMachine( Observable ):
                 transition.target.start(event)
 
                 if isinstance(transition.target, PseudoState):
-                    self.logger.info('Target is a PseudoState')
+                    # Pseudo states are for making choices/decisions.
+                    # Send the event to the target to see what decision it makes
                     self.notify(event)
 
+            self.flush()
         else:
             msg = 'State Machine has no current state'
             self.logger.error( msg )
