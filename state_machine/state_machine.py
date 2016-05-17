@@ -5,7 +5,8 @@ A simple Event Driven Finite State Machine class
 
 from state_machine.events import DelayedObservable
 from state_machine.exception import StateMachineException
-from state_machine.state import State, PseudoState
+from state_machine.state import State, PseudoState, FinalState
+#from state_machine.composite_state import CompositeState
 import traceback
 from state_machine.data import Data
 
@@ -42,6 +43,9 @@ class StateMachine(DelayedObservable):
         self.data = data or Data( name )
         self._vars = {}
 
+        from state_machine.composite_state import CompositeState
+        self.CompositeStateClass = CompositeState
+
     @property
     def vars(self):
         return self._vars
@@ -66,45 +70,43 @@ class StateMachine(DelayedObservable):
     def current_state(self):
         return self._current_state
 
-    @property
-    def start_state(self):
-        return self.initial_state
-    
-    def set_start_state(self, start_state):
-        self.initial_state = start_state
-
     def notify(self, event):
-        try:
-            self._notify(event)
-        except Exception as e:
-            msg = 'Failed to run state %s\n'%self._current_state
-            msg += traceback.format_exc()
-            self.logger.error( msg )
+        self._notify(event)
 
     def _notify(self, event):
 
-        if self._current_state:
-            self._current_state.run(event)
+        self._current_state.run(event)
+
+        if isinstance(self._current_state,self.CompositeStateClass):
+            child_transition = self._current_state._current_state.next_transition(event)
+            self.logger.info('Child transition %s'%child_transition)
+            if child_transition:
+                self._current_state.process_transition(child_transition, event)
+            else:
+                transition = self._current_state.next_transition(event)
+                if transition:
+                    self.process_transition(transition, event)
+        else:
+
             transition = self._current_state.next_transition(event)
             if transition:
-                self._current_state.end(event)
+                self.process_transition(transition, event)
 
-                self.logger.info( 'Starting state %s', transition.target.name )
+        self.flush()
 
-                self.set_state(transition.target)
+    def process_transition(self, transition, event):
+        self._current_state.end(event)
 
-                transition.target.start(event)
+        self.logger.info( 'Starting state %s', transition.target.name )
 
-                if isinstance(transition.target, PseudoState):
-                    # Pseudo states are for making choices/decisions.
-                    # Send the event to the target to see what decision it makes
-                    self.notify(event)
+        self.set_state(transition.target)
 
-            self.flush()
-        else:
-            msg = 'State Machine has no current state'
-            self.logger.error( msg )
-            raise StateMachineException( msg )
+        transition.target.start(event)
+
+        if isinstance(transition.target, PseudoState):
+            # Pseudo states are for making choices/decisions.
+            # Send the event to the target to see what decision it makes
+            self.notify(event)
 
     def set_state(self, state ):
         kwargs = {

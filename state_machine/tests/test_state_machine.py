@@ -27,10 +27,6 @@ class StateMachineTests(unittest.TestCase):
         with self.assertRaises( StateMachineException ):
             sm.add_state( state )
 
-    def test_notify(self):
-        sm = StateMachine( 'test machine' )
-        sm.notify( Event() )
-
     def test_notify_simple(self):
         '''
         A simple example of using a state machine

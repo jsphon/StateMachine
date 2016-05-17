@@ -16,6 +16,8 @@ class BaseState( object ):
         self.on_run = None
         self._vars = {}
 
+        self._logger = None
+
     def __repr__(self):
         return 'State:%s'%self.name
 
@@ -25,7 +27,11 @@ class BaseState( object ):
 
     @property
     def logger(self):
-        return self.machine.logger
+        return self._logger or self.machine.logger
+
+    @logger.setter
+    def logger(self, value):
+        self._logger = value
 
     def notify_observers(self, event):
         self.machine.notify_observers(event)
@@ -101,12 +107,5 @@ class PseudoState(BaseState):
                 return t
 
 
-class FinalState(State):
-
-    def __init__(self, name=None):
-        name = name or 'Final State'
-        super(FinalState, self).__init__(name)
-
-    def find_next_triggered_transition(self, data, model):
-        """ This does nothing """
-        pass
+class FinalState(object):
+    name='Final State'
