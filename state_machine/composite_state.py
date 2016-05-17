@@ -18,6 +18,7 @@ class CompositeState(State, StateMachine):
 
     def end(self, event):
         State.end(self,event)
+        self._current_state.end(event)
         self.set_state(FinalState())
 
     def notify_observers(self, event):

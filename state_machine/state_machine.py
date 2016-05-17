@@ -93,6 +93,7 @@ class StateMachine(DelayedObservable):
             event.processed=True
 
     def process_transition(self, transition, event):
+        self.logger.info('calling end on %s',self._current_state)
         self._current_state.end(event)
         self.set_state(transition.target)
         transition.target.start(event)

@@ -69,6 +69,9 @@ class CompositeStateTests(unittest.TestCase):
         substate_target = composite_state.create_state('substate2')
         substate_source.add_transition_to(substate_target, 'tick')
 
+        substate_source.on_end = MagicMock()
+        substate_target.on_start = MagicMock()
+
         composite_state.initial_state=substate_source
         composite_state.reset()
 
@@ -82,6 +85,8 @@ class CompositeStateTests(unittest.TestCase):
         # Verify
         self.assertEqual(composite_state, m.current_state)
         self.assertEqual(substate_target, composite_state.current_state)
+        self.assertEqual(1, substate_source.on_end.call_count)
+        self.assertEqual(1, substate_target.on_start.call_count)
 
     def test_notify_parent(self):
         m  = StateMachine()
@@ -94,8 +99,14 @@ class CompositeStateTests(unittest.TestCase):
         substate_target = composite_state.create_state('substate2')
         substate_source.add_transition_to(substate_target, 'tick')
 
+        substate_source.on_end = MagicMock()
+        substate_target.on_start = MagicMock()
+
         composite_state.initial_state=substate_source
         composite_state.reset()
+
+        composite_state.on_end = MagicMock()
+        target_state.on_start = MagicMock()
 
         m.initial_state=composite_state
         m.reset()
@@ -107,6 +118,12 @@ class CompositeStateTests(unittest.TestCase):
         # Verify
         self.assertEqual(target_state, m.current_state)
         self.assertIsInstance(composite_state.current_state, FinalState)
+
+        self.assertEqual(1, substate_source.on_end.call_count)
+        self.assertEqual(0, substate_target.on_start.call_count)
+
+        self.assertEqual(1, composite_state.on_end.call_count)
+        self.assertEqual(1, target_state.on_start.call_count)
 
 
 if __name__ == "__main__":
