@@ -109,8 +109,6 @@ class CompositeStateTests(unittest.TestCase):
         self.assertIsInstance(composite_state.current_state, FinalState)
 
 
-
-
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.testName']
     unittest.main()

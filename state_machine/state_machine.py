@@ -78,31 +78,24 @@ class StateMachine(DelayedObservable):
         self._current_state.run(event)
 
         if isinstance(self._current_state,self.CompositeStateClass):
-            child_transition = self._current_state._current_state.next_transition(event)
-            self.logger.info('Child transition %s'%child_transition)
-            if child_transition:
-                self._current_state.process_transition(child_transition, event)
-            else:
-                transition = self._current_state.next_transition(event)
-                if transition:
-                    self.process_transition(transition, event)
+            self._current_state.process_event(event)
+            if not event.processed:
+                self.process_event(event)
         else:
-
-            transition = self._current_state.next_transition(event)
-            if transition:
-                self.process_transition(transition, event)
+            self.process_event(event)
 
         self.flush()
 
+    def process_event(self, event):
+        transition = self._current_state.next_transition(event)
+        if transition:
+            self.process_transition(transition, event)
+            event.processed=True
+
     def process_transition(self, transition, event):
         self._current_state.end(event)
-
-        self.logger.info( 'Starting state %s', transition.target.name )
-
         self.set_state(transition.target)
-
         transition.target.start(event)
-
         if isinstance(transition.target, PseudoState):
             # Pseudo states are for making choices/decisions.
             # Send the event to the target to see what decision it makes
