@@ -11,6 +11,48 @@ from mock import MagicMock
 import logging
 logging.basicConfig(level=logging.DEBUG)
 
+class ExampleTests(unittest.TestCase):
+
+    def test(self):
+        chatbot = StateMachine('chatbot')
+        active_state = chatbot.create_state('active', CompositeState)
+        sleeping_state = chatbot.create_state('sleeping', State)
+
+        chatbot.initial_state=active_state
+
+        active_state.add_transition_to(sleeping_state, 'sunset')
+        sleeping_state.add_transition_to(active_state, 'sunrise')
+
+        happy_state = active_state.create_state('happy')
+        sad_state = active_state.create_state('sad')
+
+        happy_state.add_transition_to(sad_state, 'criticism')
+        sad_state.add_transition_to(happy_state, 'praise')
+
+        active_state.initial_state=happy_state
+        active_state.reset()
+
+        sunrise=Event('sunrise')
+        sunset=Event('sunset')
+
+        chatbot.reset()
+
+        chatbot.notify(sunset)
+        self.assertEqual(sleeping_state, chatbot.current_state)
+
+        chatbot.notify(sunrise)
+        self.assertEqual(active_state, chatbot.current_state)
+
+        #chatbot.logger.info('2nd run')
+        #chatbot.notify(sunset)
+        #self.assertEqual(sleeping_state, chatbot.current_state)
+
+        #chatbot.notify(sunset)
+        #self.assertEqual(sleeping_state, chatbot.current_state)
+
+        #chatbot.notify(sunrise)
+        #self.assertEqual(active_state, chatbot.current_state)
+
 class CompositeStateTests(unittest.TestCase):
 
     def test___init__(self):

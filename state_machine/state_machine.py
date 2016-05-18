@@ -43,9 +43,6 @@ class StateMachine(DelayedObservable):
         self.data = data or Data( name )
         self._vars = {}
 
-        from state_machine.composite_state import CompositeState
-        self.CompositeStateClass = CompositeState
-
     def __repr__(self):
         return '<StateMachine name="%s">'%self.name
 
@@ -55,6 +52,8 @@ class StateMachine(DelayedObservable):
 
     def reset(self):
         self.set_state(self.initial_state)
+        if issubclass( type(self.initial_state), StateMachine):
+            self._current_state.reset()
 
     def create_state(self, name, StateClass=None, *args, **kwargs):
         StateClass = StateClass or State
@@ -77,9 +76,12 @@ class StateMachine(DelayedObservable):
 
         self._current_state.run(event)
 
-        if isinstance(self._current_state,self.CompositeStateClass):
-            self._current_state.process_event(event)
-            if not event.processed:
+        if issubclass( type(self._current_state), StateMachine):
+            child_machine = self._current_state
+            child_transition = child_machine._current_state.next_transition(event)
+            if child_transition:
+                child_machine.process_transition(child_transition, event)
+            else:
                 self.process_event(event)
         else:
             self.process_event(event)
@@ -93,7 +95,6 @@ class StateMachine(DelayedObservable):
             event.processed=True
 
     def process_transition(self, transition, event):
-        self.logger.info('calling end on %s',self._current_state)
         self._current_state.end(event)
         self.set_state(transition.target)
         transition.target.start(event)
