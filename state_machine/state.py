@@ -43,14 +43,14 @@ class BaseState( object ):
         pass
 
     def start(self, event):
-        self.logger.info( 'Starting state %s', self.name )
+        #self.logger.info( 'Starting state %s', self.name )
         self._vars.clear()
         self.start_event=event
         if self.on_start:
             self.on_start(event,self)
 
     def end(self, event):
-        self.logger.info( 'Ending state %s', self.name )
+        #self.logger.info( 'Ending state %s', self.name )
         if self.on_end:
             self.on_end(event, self)
         self._vars.clear()
@@ -82,7 +82,6 @@ class State(BaseState):
             self.default_transition=t
 
     def next_transition(self, event):
-
         transitions = self.listeners[event.name]
         for t in transitions:
             if t.is_triggered(event):

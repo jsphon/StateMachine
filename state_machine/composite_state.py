@@ -13,7 +13,7 @@ class CompositeState(State, StateMachine):
         self._current_state.run( event )
 
     def start(self, event):
-        self.logger.info( 'Starting %s'%self.name)
+        #self.logger.info( 'Starting %s'%self.name)
         State.start(self, event)
         self.reset()
 

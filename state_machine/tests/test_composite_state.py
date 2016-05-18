@@ -13,7 +13,8 @@ logging.basicConfig(level=logging.DEBUG)
 
 class ExampleTests(unittest.TestCase):
 
-    def test(self):
+    def setUp(self):
+
         chatbot = StateMachine('chatbot')
         active_state = chatbot.create_state('active', CompositeState)
         sleeping_state = chatbot.create_state('sleeping', State)
@@ -32,26 +33,71 @@ class ExampleTests(unittest.TestCase):
         active_state.initial_state=happy_state
         active_state.reset()
 
-        sunrise=Event('sunrise')
-        sunset=Event('sunset')
-
         chatbot.reset()
 
-        chatbot.notify(sunset)
-        self.assertEqual(sleeping_state, chatbot.current_state)
+        self.chatbot = chatbot
+        self.active_state = active_state
+        self.sleeping_state = sleeping_state
+        self.happy_state = happy_state
+        self.sad_state = sad_state
 
-        chatbot.notify(sunrise)
-        self.assertEqual(active_state, chatbot.current_state)
+        self.sunrise=Event('sunrise')
+        self.sunset=Event('sunset')
 
-        #chatbot.logger.info('2nd run')
-        #chatbot.notify(sunset)
-        #self.assertEqual(sleeping_state, chatbot.current_state)
+        self.criticism=Event('criticism')
+        self.praise=Event('praise')
 
-        #chatbot.notify(sunset)
-        #self.assertEqual(sleeping_state, chatbot.current_state)
+    def test_parent(self):
+        '''
+        Test interactions on the parent only
+        '''
+        for _ in range(100):
+            self.chatbot.notify(self.sunset)
+            self.assertEqual(self.sleeping_state, self.chatbot.current_state)
 
-        #chatbot.notify(sunrise)
-        #self.assertEqual(active_state, chatbot.current_state)
+            self.chatbot.notify(self.sunrise)
+            self.assertEqual(self.active_state, self.chatbot.current_state)
+            self.assertEqual(self.happy_state, self.chatbot.current_state.current_state)
+
+    def test_child(self):
+        '''
+        Test interactions on the child only
+        '''
+
+        self.chatbot.notify(self.criticism)
+        self.assertEqual(self.active_state, self.chatbot.current_state)
+        self.assertEqual(self.sad_state, self.active_state.current_state)
+
+        self.chatbot.notify(self.praise)
+        self.assertEqual(self.active_state, self.chatbot.current_state)
+        self.assertEqual(self.happy_state, self.active_state.current_state)
+
+    def test_both(self):
+        '''
+        Test interactions on both parent and child
+        '''
+        for _ in range(100):
+            self.chatbot.notify(self.sunset)
+            self.assertEqual(self.sleeping_state, self.chatbot.current_state)
+
+            self.chatbot.notify(self.criticism)
+            self.assertEqual(self.sleeping_state, self.chatbot.current_state)
+
+            self.chatbot.notify(self.praise)
+            self.assertEqual(self.sleeping_state, self.chatbot.current_state)
+
+
+            self.chatbot.notify(self.sunrise)
+            self.assertEqual(self.active_state, self.chatbot.current_state)
+            self.assertEqual(self.happy_state, self.chatbot.current_state.current_state)
+
+            self.chatbot.notify(self.criticism)
+            self.assertEqual(self.active_state, self.chatbot.current_state)
+            self.assertEqual(self.sad_state, self.chatbot.current_state.current_state)
+
+
+
+
 
 class CompositeStateTests(unittest.TestCase):
 
@@ -67,38 +113,6 @@ class CompositeStateTests(unittest.TestCase):
         ss = cs.create_state('substate1')
 
         self.assertIsInstance(ss, State)
-
-    def xtest_next_transition_when_has_child_only(self):
-        m  = StateMachine()
-
-        cs = m.create_state('composite', CompositeState)
-
-        ss1 = cs.create_state('substate1')
-        ss2 = cs.create_state('substate2')
-        ss1.add_transition_to(ss2, 'tick')
-        cs.initial_state=ss1
-        cs.reset()
-
-        e = Event('tick')
-        t = cs.next_transition(e)
-
-        self.assertIsInstance(t, Transition)
-        self.assertEqual(ss2, t.target)
-
-    def xtest_next_transition_when_has_parent_only(self):
-        m  = StateMachine()
-
-        cs = m.create_state('composite', CompositeState)
-        tgt = m.create_state('tgt' )
-
-        cs.initial_state = cs.create_state('substate1')
-        cs.reset()
-        cs.add_transition_to(tgt)
-
-        e = Event()
-        t = cs.next_transition(e)
-
-        self.assertEqual(tgt, t.target)
 
     def test_notify_child(self):
         m  = StateMachine()

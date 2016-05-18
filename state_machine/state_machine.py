@@ -92,7 +92,6 @@ class StateMachine(DelayedObservable):
         transition = self._current_state.next_transition(event)
         if transition:
             self.process_transition(transition, event)
-            event.processed=True
 
     def process_transition(self, transition, event):
         self._current_state.end(event)
