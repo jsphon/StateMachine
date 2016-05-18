@@ -125,6 +125,29 @@ class CompositeStateTests(unittest.TestCase):
         self.assertEqual(1, composite_state.on_end.call_count)
         self.assertEqual(1, target_state.on_start.call_count)
 
+    def test_notify_observers(self):
+        """
+        Test that a substate still notifies observers
+        """
+        # SETUP
+        m  = StateMachine('Observed')
+        composite_state = m.create_state('composite', CompositeState)
+        sub_state = composite_state.create_state('substate')
+
+        listener = StateMachine('Listener')
+        listener.notify = MagicMock()
+
+        m.register_observer('tick', listener)
+
+        # TEST
+        e = Event('tick')
+        sub_state.notify_observers(e)
+        m.flush()
+
+        self.assertEqual(1, listener.notify.call_count)
+        listener.notify.assert_called_with(e)
+
+
 
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.testName']

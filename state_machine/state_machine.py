@@ -46,6 +46,9 @@ class StateMachine(DelayedObservable):
         from state_machine.composite_state import CompositeState
         self.CompositeStateClass = CompositeState
 
+    def __repr__(self):
+        return '<StateMachine name="%s">'%self.name
+
     @property
     def vars(self):
         return self._vars
@@ -71,9 +74,6 @@ class StateMachine(DelayedObservable):
         return self._current_state
 
     def notify(self, event):
-        self._notify(event)
-
-    def _notify(self, event):
 
         self._current_state.run(event)
 
