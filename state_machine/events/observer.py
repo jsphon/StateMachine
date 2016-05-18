@@ -11,17 +11,17 @@ from collections import defaultdict
 class Observable(object):
 
     def __init__(self):
-        self.__observers = defaultdict(set)
+        self._observers = defaultdict(set)
 
     @property
     def observers(self):
-        return self.__observers
+        return self._observers
 
     def register_observer(self, event_name, observer):
-        self.__observers[event_name].add(observer)
+        self._observers[event_name].add(observer)
 
     def notify_observers(self, event):
-        observers = self.__observers[event.name]
+        observers = self._observers[event.name]
         for observer in observers:
             observer.notify(event)
 
