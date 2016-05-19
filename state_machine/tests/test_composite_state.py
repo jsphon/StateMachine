@@ -1,15 +1,10 @@
-'''
-Created on 24 May 2015
-
-@author: jon
-'''
 import unittest
-from state_machine import Event, State, StateMachine, PseudoState, CompositeState, Transition, FinalState
-from state_machine.state import BaseState
+from state_machine import Event, State, StateMachine, CompositeState, FinalState
 from mock import MagicMock
 
 import logging
 logging.basicConfig(level=logging.DEBUG)
+
 
 class ExampleTests(unittest.TestCase):
 
@@ -86,7 +81,6 @@ class ExampleTests(unittest.TestCase):
             self.chatbot.notify(self.praise)
             self.assertEqual(self.sleeping_state, self.chatbot.current_state)
 
-
             self.chatbot.notify(self.sunrise)
             self.assertEqual(self.active_state, self.chatbot.current_state)
             self.assertEqual(self.happy_state, self.chatbot.current_state.current_state)
@@ -94,9 +88,6 @@ class ExampleTests(unittest.TestCase):
             self.chatbot.notify(self.criticism)
             self.assertEqual(self.active_state, self.chatbot.current_state)
             self.assertEqual(self.sad_state, self.chatbot.current_state.current_state)
-
-
-
 
 
 class CompositeStateTests(unittest.TestCase):
