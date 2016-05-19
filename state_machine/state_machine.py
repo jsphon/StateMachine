@@ -95,6 +95,7 @@ class StateMachine(DelayedObservable):
 
     def process_transition(self, transition, event):
         self._current_state.end(event)
+        self.logger.info( '%s transitioning to state %s', self.name, transition.target)
         self.set_state(transition.target)
         transition.target.start(event)
         if isinstance(transition.target, PseudoState):
