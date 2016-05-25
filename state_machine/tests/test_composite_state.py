@@ -26,9 +26,9 @@ class ExampleTests(unittest.TestCase):
         sad_state.add_transition_to(happy_state, 'praise')
 
         active_state.initial_state=happy_state
-        active_state.reset()
+        active_state.initialise()
 
-        chatbot.reset()
+        chatbot.initialise()
 
         self.chatbot = chatbot
         self.active_state = active_state
@@ -120,10 +120,10 @@ class CompositeStateTests(unittest.TestCase):
         substate_target.on_start = MagicMock()
 
         composite_state.initial_state=substate_source
-        composite_state.reset()
+        composite_state.initialise()
 
         m.initial_state=composite_state
-        m.reset()
+        m.initialise()
 
         # Test, expecting the composite state's machine to transition
         e = Event('tick')
@@ -150,13 +150,13 @@ class CompositeStateTests(unittest.TestCase):
         substate_target.on_start = MagicMock()
 
         composite_state.initial_state=substate_source
-        composite_state.reset()
+        composite_state.initialise()
 
         composite_state.on_end = MagicMock()
         target_state.on_start = MagicMock()
 
         m.initial_state=composite_state
-        m.reset()
+        m.initialise()
 
         # Test, expecting the composite state's machine to transition
         e = Event('parent tick')
