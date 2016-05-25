@@ -50,10 +50,10 @@ class StateMachine(DelayedObservable):
     def vars(self):
         return self._vars
 
-    def reset(self):
+    def initialise(self):
         self.set_state(self.initial_state)
         if issubclass( type(self.initial_state), StateMachine):
-            self._current_state.reset()
+            self._current_state.initialise()
 
     def create_state(self, name, StateClass=None, *args, **kwargs):
         StateClass = StateClass or State
@@ -97,11 +97,17 @@ class StateMachine(DelayedObservable):
         self._current_state.end(event)
         self.logger.info( '%s transitioning to state %s', self.name, transition.target)
         self.set_state(transition.target)
+        if transition.action:
+            transition.action(event, self._current_state)
         transition.target.start(event)
         if isinstance(transition.target, PseudoState):
             # Pseudo states are for making choices/decisions.
             # Send the event to the target to see what decision it makes
-            self.notify(event)
+
+            # We can call proces_event instead of notify, as at time of writing,
+            # we don't need the other logic contained in notify
+            self.process_event(event)
+            #self.notify(event)
 
     def set_state(self, state ):
         kwargs = {

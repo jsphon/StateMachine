@@ -112,7 +112,7 @@ class StateTests(unittest.TestCase):
 
         s1.add_transition_to(s2, 'test event...')
 
-        self.assertEqual( s2, s1.listeners['test event...'][0].target )
+        self.assertEqual( s2, s1.transitions_by_trigger['test event...'][0].target )
 
     def test_add_transition_to_without_params(self):
         m  = StateMachine()
@@ -122,7 +122,7 @@ class StateTests(unittest.TestCase):
 
         s1.add_transition_to(s2)
 
-        self.assertEqual( 0, len( s1.listeners ) )
+        self.assertEqual( 0, len( s1.transitions_by_trigger ) )
         self.assertEqual( s2, s1.default_transition.target )
 
     def test_next_transition(self):
@@ -167,6 +167,51 @@ class StateTests(unittest.TestCase):
 
         self.assertEqual(e, s.start_event)
 
+    def test_transitions(self):
+
+        m = StateMachine()
+        s = m.create_state(name='test state')
+
+        s2 = m.create_state(name='s2')
+        s3 = m.create_state(name='s3')
+
+        s.add_transition_to( s2, 'ignore' )
+        s.add_transition_to( s3, 'trigger' )
+
+        transitions = s.transitions
+
+        self.assertIsInstance( transitions, list )
+        self.assertEqual(2, len( transitions ))
+
+    def test_to_str(self):
+
+        m = StateMachine()
+        s = m.create_state(name='test state')
+
+        s2 = m.create_state(name='s2')
+        s.add_transition_to( s2, 'trigger' )
+
+        r = s.transitions[0].to_str()
+
+        self.assertEqual('trigger', r)
+
+    def test_to_str2(self):
+
+        def guard_fn(event, state):
+            return True
+
+        def action_fn(event, state):
+            pass
+
+        m = StateMachine()
+        s = m.create_state(name='test state')
+
+        s2 = m.create_state(name='s2')
+        s.add_transition_to( s2, 'trigger', guard=guard_fn, action=action_fn )
+
+        r = s.transitions[0].to_str()
+
+        self.assertEqual('trigger[guard_fn]/action_fn', r)
 
 
 if __name__ == "__main__":

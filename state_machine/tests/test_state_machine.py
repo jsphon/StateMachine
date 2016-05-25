@@ -39,7 +39,7 @@ class StateMachineTests(unittest.TestCase):
         src.add_transition_to( tgt )
 
         sm.initial_state=src
-        sm.reset()
+        sm.initialise()
 
         evt  = Event()
 
@@ -204,7 +204,7 @@ class Examples(unittest.TestCase):
         server_state = server.create_state('do something')
         server_state.on_run = send_data
         server.initial_state = server_state
-        server.reset()
+        server.initialise()
 
         def handle_data(event, state):
             state.logger.info( 'Received data %s', event.payload)
@@ -217,7 +217,7 @@ class Examples(unittest.TestCase):
         client_state.vars['call_count'] = 0
 
         client.initial_state = client_state
-        client.reset()
+        client.initialise()
 
         # Test
         e = Event('tick')
@@ -229,7 +229,6 @@ class Examples(unittest.TestCase):
         # Test Again!
         server.notify(e)
         self.assertEqual(2, client_state.vars['call_count'])
-
 
 
 if __name__ == "__main__":

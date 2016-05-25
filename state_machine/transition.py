@@ -11,6 +11,12 @@ class Transition( object ):
     def __repr__(self):
         return 'Transition from %s to %s'%(self.source,self.target)
 
+    def to_str(self):
+        trigger = self.trigger if self.trigger else ''
+        guard = '[%s]'%self.guard.__name__ if self.guard else ''
+        action = '/%s'%self.action.__name__ if self.action else ''
+        return '%s%s%s'%(trigger, guard, action)
+
     def is_triggered(self, event):
 
         if self.trigger and event.name!=self.trigger:

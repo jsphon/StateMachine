@@ -11,6 +11,8 @@ class BaseState( object ):
 
         self.start_event = None
 
+        #  Do we need to refactor this, as Final States do not have on_end or vars
+        # PseudoState might not have on_run, as they exit straight away.
         self.on_start = None
         self.on_end = None
         self.on_run = None
@@ -62,12 +64,16 @@ class BaseState( object ):
     def next_transition(self, event):
         pass
 
+    @property
+    def transitions(self):
+        raise NotImplemented()
+
 
 class State(BaseState):
 
     def __init__(self, name, machine):
         super(State, self).__init__(name, machine)
-        self.listeners = defaultdict(list)
+        self.transitions_by_trigger = defaultdict(list)
 
     def __repr__(self):
         return 'State:%s'%self.name
@@ -75,18 +81,25 @@ class State(BaseState):
     def add_transition_to(self, target, trigger=None, guard=None, action=None):
         t = Transition(self, target, trigger=trigger, guard=guard, action=action)
         if trigger:
-            self.listeners[trigger].append(t)
+            self.transitions_by_trigger[trigger].append(t)
         elif self.default_transition:
             raise Exception('Default transition already exists')
         else:
             self.default_transition=t
 
     def next_transition(self, event):
-        transitions = self.listeners[event.name]
+        transitions = self.transitions_by_trigger[event.name]
         for t in transitions:
             if t.is_triggered(event):
                 return t
         return self.default_transition
+
+    @property
+    def transitions(self):
+        result = []
+        for transitions in self.transitions_by_trigger.values():
+            result.extend(transitions)
+        return result
 
 
 class PseudoState(BaseState):
@@ -95,18 +108,29 @@ class PseudoState(BaseState):
 
     def __init__(self, name, machine):
         super(PseudoState, self).__init__(name, machine)
-        self.transitions = []
+        self._transitions = []
 
     def add_transition_to(self, target, trigger=None, guard=None, action=None):
         assert trigger is None, 'triggers should be None in PseudoStates'
         t = Transition(self, target, trigger=trigger, guard=guard, action=action)
-        self.transitions.append(t)
+        self._transitions.append(t)
 
     def next_transition(self, event):
-        for t in self.transitions:
+        for t in self._transitions:
             if t.is_triggered(event):
                 return t
 
+    @property
+    def transitions(self):
+        return self._transitions
 
-class FinalState(object):
+class FinalState(BaseState):
+
     name='Final State'
+
+    def __init__(self,name='final', machine=None):
+        super(FinalState, self).__init__(name, machine)
+
+    @property
+    def transitions(self):
+        return []
