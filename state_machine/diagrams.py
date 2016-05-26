@@ -1,6 +1,10 @@
-from state_machine import State, CompositeState, FinalState, StateMachine, PseudoState
+from state_machine import State, CompositeState, FinalState, StateMachine, PseudoState, StateMachineException
 import pygraphviz as pgv
 from IPython.display import SVG, display
+import collections
+
+#from logging import getLogger
+#logger = getLogger('default')
 
 initial_style= {
     'shape': 'circle',
@@ -20,7 +24,7 @@ final_style= {
 
 
 def state_with_most_outbound_transitions(machine):
-    mx=0
+    mx=-1
     r=None
     for s in machine.states.values():
         if isinstance( s, State):
@@ -57,8 +61,9 @@ def draw_nodes(machine, graph):
     elif type(target)==CompositeState:
         lhead = 'cluster_%s'%target.name
         target_state = state_with_most_outbound_transitions(target)
-        target_name  = target_state.name
-        graph.add_edge( initial_node, target_name, lhead=lhead, label='start' )
+        if target_state:
+            target_name  = target_state.name
+            graph.add_edge( initial_node, target_name, lhead=lhead, label='start' )
     elif type(target)==PseudoState:
         target_name = target.name
         graph.add_edge( initial_node, target_name, label='start')
@@ -87,6 +92,7 @@ def draw_nodes(machine, graph):
 
 def draw_transitions( machine, graph ):
     for k, s in machine.states.items():
+        #logger.info( 'Drawing transitions for state %s'%k)
         draw_state_transitions( s, graph )
 
         if isinstance(s, StateMachine):
@@ -104,18 +110,28 @@ def draw_state_transitions( state, graph ):
         print( 'tail for %s is %s'%(state,ltail))
     elif type(state)==PseudoState:
         source_state=state
+    elif state is None:
+        raise Exception('state is None')
+    elif type(state)==FinalState:
+        return
+    else:
+        raise Exception('Type not supported %s'%type(state))
+
+    #logger.info( 'source state is %s'%source_state)
 
     for t in state.transitions:
         target = t.target
-        if type(target) in (State, FinalState):
+        if type(target) in (State, FinalState, PseudoState):
             lhead = None
             target_name = t.target.name
         elif type(target)==CompositeState:
             lhead = 'cluster_%s'%target.name
             target_state = target.initial_state
             target_name  = target_state.name
+        elif target is None:
+            raise Exception('No target for %s'%t)
         else:
-            raise NotImplemented()
+            raise TypeError('Not implemented for target of type %s, %s'%(type(target),t))
         #print('Adding edge from %s to %s, ltail=%s'%(source_state.name, target_name, ltail))
         kwargs = {'label':t.to_str()}
         if ltail: kwargs['ltail']=ltail
@@ -124,14 +140,28 @@ def draw_state_transitions( state, graph ):
         graph.add_edge( source_state.name, target_name, **kwargs )
 
 def draw_machine(machine, filename=None):
-    filename=filename or 'state.svg'
+    verify(machine)
+    filename=filename or '/tmp/state.svg'
     G = pgv.AGraph(compound=True,directed=True)
     draw_nodes( machine, G )
     draw_transitions( machine, G )
     return G
 
 def display_machine(machine, filename=None):
-    filename = filename or 'state.svg'
+    filename = filename or '/tmp/state.svg'
     G = draw_machine(machine)
     G.draw(filename, prog='dot')
     display(SVG(filename))
+
+def verify(machine):
+    states = []
+    for s in machine.states.values():
+        states.append(s)
+        if isinstance(s, StateMachine):
+            states.extend(s.states.values())
+
+    state_names = (s.name for s in states)
+    duplicated = [item for item, count in collections.Counter(state_names).items() if count > 1]
+    if duplicated:
+        msg = 'Duplicated State Names'
+        raise StateMachineException(msg)
