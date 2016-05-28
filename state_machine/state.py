@@ -39,7 +39,7 @@ class BaseState( object ):
         self.machine.notify_observers(event)
 
     def add_default_transition_to(self, target):
-        self.default_transition = DefaultTransition(target)
+        self.default_transition = DefaultTransition(self, target)
 
     def add_transition_to(self, target, trigger=None, guard=None, action=None):
         pass
@@ -123,7 +123,10 @@ class PseudoState(BaseState):
 
     @property
     def transitions(self):
-        return self._transitions
+        if self.default_transition:
+            return self._transitions + [ self.default_transition ]
+        else:
+            return self._transitions
 
 class FinalState(BaseState):
 

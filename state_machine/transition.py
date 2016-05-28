@@ -30,12 +30,8 @@ class Transition( object ):
 
 class DefaultTransition(Transition):
 
-    def __init__(self, target_state):
-        self.target = target_state
-        self.condition = None
+    def __init__(self, source_state, target_state):
+        super(DefaultTransition, self).__init__(source_state, target_state)
 
     def __repr__(self):
-        return 'Default Transition to %s'%self.target
-
-    def is_triggered(self, event):
-        return True
+        return 'Default Transition from %s to %s'%(self.source,self.target)
