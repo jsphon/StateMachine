@@ -182,6 +182,23 @@ class StateMachineTests(unittest.TestCase):
         self.assertEqual(1, new_state.arg1)
         self.assertEqual(new_state, sm.states['new state'])
 
+    def test_self_transition(self):
+
+        def store_var(event, state):
+            state.machine.vars['v1']=1
+
+        sm = StateMachine()
+        s  = sm.create_state('s1')
+        s.add_transition_to(s, 'tick', action=store_var)
+
+        sm.initial_state=s
+        sm.initialise()
+
+        e=Event('tick')
+        sm.notify(e)
+
+        self.assertEqual(1, s.machine.vars['v1'])
+
 class Examples(unittest.TestCase):
 
     def test_inter_machine_communication(self):
