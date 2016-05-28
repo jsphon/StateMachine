@@ -119,6 +119,7 @@ class PseudoState(BaseState):
         for t in self._transitions:
             if t.is_triggered(event):
                 return t
+        return self.default_transition
 
     @property
     def transitions(self):
