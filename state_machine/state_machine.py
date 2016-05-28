@@ -99,7 +99,6 @@ class StateMachine(DelayedObservable):
         if transition.target!=self.current_state:
             # This is a self transition, so do no call set_state
             self.set_state(transition.target)
-            self.vars.clear()
         if transition.action:
             transition.action(event, self._current_state)
         transition.target.start(event)
