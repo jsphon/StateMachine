@@ -4,6 +4,7 @@ import unittest
 from state_machine.state_machine import StateMachine
 from state_machine.exception import StateMachineException
 from state_machine.state import State, PseudoState
+from state_machine import CompositeState
 from state_machine import Event
 from mock import MagicMock
 
@@ -198,6 +199,23 @@ class StateMachineTests(unittest.TestCase):
         sm.notify(e)
 
         self.assertEqual(1, s.machine.vars['v1'])
+
+    def test_set_state_by_name(self):
+
+        sm = StateMachine()
+        s1 = sm.create_state('s1')
+        s2 = sm.create_state('s2',PseudoState)
+        s3 = sm.create_state('s3',CompositeState)
+
+        sm.set_state_by_name('s1')
+        self.assertEqual(s1, sm.current_state)
+
+        sm.set_state_by_name('s2')
+        self.assertEqual(s2, sm.current_state)
+
+        sm.set_state_by_name('s3')
+        self.assertEqual(s3, sm.current_state)
+
 
 class Examples(unittest.TestCase):
 

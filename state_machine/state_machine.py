@@ -118,3 +118,9 @@ class StateMachine(DelayedObservable):
         }
         self.data.set_multi( **kwargs )
         self._current_state = state
+
+    def set_state_by_name(self, name):
+        if name in self.states:
+            self.set_state(self.states[name])
+        else:
+            raise StateMachineException('%s not in states dictionary'%name)
