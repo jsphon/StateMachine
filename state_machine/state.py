@@ -16,7 +16,6 @@ class BaseState( object ):
         self.on_start = None
         self.on_end = None
         self.on_run = None
-        self._vars = {}
 
         self._logger = None
 
@@ -25,7 +24,7 @@ class BaseState( object ):
 
     @property
     def vars(self):
-        return self._vars
+        return self.machine.vars
 
     @property
     def logger(self):
