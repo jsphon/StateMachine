@@ -95,7 +95,7 @@ class StateMachine(DelayedObservable):
 
     def process_transition(self, transition, event):
         self._current_state.end(event)
-        self.logger.info( '%s transitioning to state %s', self.name, transition.target)
+        self.logger.info( '%s transitioning to state %s', transition.source, transition.target)
         if transition.target!=self.current_state:
             # This is a self transition, so do no call set_state
             self.set_state(transition.target)
