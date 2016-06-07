@@ -1,19 +1,24 @@
 from unittest import TestCase
-from state_machine.events.aggregator import EventAggregator, EventFactory, TickFactory
+from state_machine.events.aggregator import EventAggregator
+from state_machine.events.factory import TickFactory
 from state_machine import StateMachine, FinalState
 from mock import MagicMock
 import time
 import logging
 
+
 def under_3_logs(event, state):
     return state.vars['log_count']<3
+
 
 def three_or_more_logs(event, state):
     return state.vars['log_count']>=3
 
+
 def log_event(event, state):
     state.logger.info(event)
     state.vars['log_count']+=1
+
 
 class LogMachine(StateMachine):
 
@@ -36,6 +41,7 @@ class LogMachine(StateMachine):
         s1.add_transition_to(s2, 'tick', guard=three_or_more_logs)
 
         self.vars['log_count']=0
+
 
 class TestEventAggregator(TestCase):
 
