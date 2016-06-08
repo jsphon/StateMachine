@@ -1,5 +1,6 @@
 from state_machine.stoppable_thread import StoppableThread
 from state_machine import  FinalState
+from multiprocessing import Process, Queue
 import queue
 
 
@@ -34,3 +35,42 @@ class EventAggregator(StoppableThread):
         self.machine.notify(msg)
         if isinstance(self.machine.current_state, FinalState):
             self.stop()
+
+
+class EventAggregatorProcess(Process):
+
+    def __init__(self, event_factory_classes, machine, config):
+        super(EventAggregatorProcess, self).__init__()
+        self.machine = machine
+        self.config = config
+        self.event_factory_classes = event_factory_classes
+        self.event_queue = Queue()
+        self.factories = []
+
+    def start(self):
+        super(EventAggregatorProcess, self).start()
+        self.factories = [fc(self.config, self.event_queue) for fc in self.event_factory_classes]
+        for factory in self.factories:
+            # Setting to daemon or the test never finishes, which is a bit of a hack,
+            # but the factories should only be light processes anyway, should not be writing to
+            # disks, and therefore should not cause issues if they are terminated prematurely
+            factory.daemon=True
+            factory.start()
+
+    def stop(self):
+        for factory in self.factories:
+            factory.stop()
+            factory.join()
+        self.event_queue.put(None)
+
+    def run(self):
+        is_stopped=False
+        while not is_stopped:
+            msg = self.event_queue.get()
+            if msg:
+                self.machine.notify(msg)
+                if isinstance(self.machine.current_state, FinalState):
+                    self.stop()
+            else:
+                self.machine.logger.info('EventAggregatorProcess Received poison pill.')
+                is_stopped=True

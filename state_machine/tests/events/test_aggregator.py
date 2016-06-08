@@ -1,10 +1,11 @@
 from unittest import TestCase
-from state_machine.events.aggregator import EventAggregator
+from state_machine.events.aggregator import EventAggregator, EventAggregatorProcess
 from state_machine.events.factory import TickFactory
-from state_machine import StateMachine, FinalState
+from state_machine import StateMachine, FinalState, Event
 from mock import MagicMock
 import time
 import logging
+
 
 
 def under_3_logs(event, state):
@@ -28,8 +29,11 @@ class LogMachine(StateMachine):
         self.logger = logging.getLogger('default')
         self.logger.setLevel(logging.DEBUG)
 
-        sh = logging.StreamHandler()
-        self.logger.addHandler(sh)
+        #formatter      = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        #self.logger.setFormatter(formatter)
+
+        #sh = logging.StreamHandler()
+        #self.logger.addHandler(sh)
 
         s1 = self.create_state('log event')
         s2 = self.create_state('final', FinalState)
@@ -59,6 +63,7 @@ class TestEventAggregator(TestCase):
         ea.start()
         time.sleep(3)
         ea.stop()
+        ea.join()
 
         self.assertFalse(ea.isAlive())
 
@@ -87,3 +92,42 @@ class TestEventAggregator(TestCase):
         self.assertFalse(ea.is_running)
         for factory in ea.factories:
             self.assertFalse(factory.is_running)
+
+
+class TestEventAggregatorProcess(TestCase):
+
+    def test__init__(self):
+        machine = MagicMock()
+        config = {}
+        ea = EventAggregatorProcess([TickFactory], machine, config)
+        self.assertIsInstance(ea, EventAggregatorProcess)
+
+    def test_start_stop(self):
+        machine = LogMachine()
+        config = {}
+
+        ea = EventAggregatorProcess([TickFactory], machine, config)
+        ea.start()
+        time.sleep(3)
+        ea.stop()
+
+        while ea.event_queue.qsize():
+            time.sleep(0.01)
+        self.assertFalse(ea.is_alive())
+
+
+    def test_start_autostop(self):
+        machine = LogMachine()
+        config = {}
+
+        ea = EventAggregatorProcess([TickFactory], machine, config)
+        ea.start()
+
+        #ea.stop()
+        while ea.is_alive():
+            time.sleep(0.01)
+
+
+        machine.logger.info('test finished')
+        self.assertFalse(ea.is_alive())
+        #self.assertEqual(0, ea.event_queue.qsize())
