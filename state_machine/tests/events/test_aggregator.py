@@ -1,5 +1,5 @@
 from unittest import TestCase
-from state_machine.events.aggregator import EventAggregator, EventAggregatorProcess
+from state_machine.events.aggregator import EventAggregator, EventAggregatorProcess, DuplicateAggregatorException
 from state_machine.events.factory import TickFactory
 from state_machine import StateMachine, FinalState, Event
 from mock import MagicMock
@@ -26,14 +26,12 @@ class LogMachine(StateMachine):
     def __init__(self):
         super(LogMachine, self).__init__()
 
+        self.name = 'logmachine'
         self.logger = logging.getLogger('default')
         self.logger.setLevel(logging.DEBUG)
 
-        #formatter      = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-        #self.logger.setFormatter(formatter)
-
-        #sh = logging.StreamHandler()
-        #self.logger.addHandler(sh)
+        formatter      = logging.Formatter('%(process)d %(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        self.logger.handlers[0].setFormatter(formatter)
 
         s1 = self.create_state('log event')
         s2 = self.create_state('final', FinalState)
@@ -115,7 +113,6 @@ class TestEventAggregatorProcess(TestCase):
             time.sleep(0.01)
         self.assertFalse(ea.is_alive())
 
-
     def test_start_autostop(self):
         machine = LogMachine()
         config = {}
@@ -123,11 +120,31 @@ class TestEventAggregatorProcess(TestCase):
         ea = EventAggregatorProcess([TickFactory], machine, config)
         ea.start()
 
-        #ea.stop()
         while ea.is_alive():
             time.sleep(0.01)
 
 
         machine.logger.info('test finished')
         self.assertFalse(ea.is_alive())
-        #self.assertEqual(0, ea.event_queue.qsize())
+
+    def test_prevents_multiple_starts(self):
+        machine = LogMachine()
+        config = {}
+
+        machine.logger.info('Starting machine the first time, this should work')
+        ea1 = EventAggregatorProcess([], machine, config)
+        ea1.start()
+
+        machine.logger.info('Starting machine the second time, this should fail')
+        ea2 = EventAggregatorProcess([], machine, config)
+        ea2.start()
+
+        ea1.stop()
+        ea2.stop()
+        machine.logger.info('Joining ea1')
+        ea1.join()
+        machine.logger.info('Joining ea2')
+        ea2.join()
+
+        #self.assertTrue(ea1.is_alive())
+        #self.assertFalse(ea2.is_alive())

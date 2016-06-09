@@ -1,8 +1,12 @@
 from state_machine.stoppable_thread import StoppableThread
 from state_machine import  FinalState
-from multiprocessing import Process, Queue
+from multiprocessing import Process, Queue, Value
+import os
 import queue
+import fcntl, sys
 
+class DuplicateAggregatorException(Exception):
+    pass
 
 class EventAggregator(StoppableThread):
     ''' Listen for messages
@@ -46,9 +50,12 @@ class EventAggregatorProcess(Process):
         self.event_factory_classes = event_factory_classes
         self.event_queue = Queue()
         self.factories = []
+        self.locked_file_handle = None
+
 
     def start(self):
         super(EventAggregatorProcess, self).start()
+
         self.factories = [fc(self.config, self.event_queue) for fc in self.event_factory_classes]
         for factory in self.factories:
             # Setting to daemon or the test never finishes, which is a bit of a hack,
@@ -58,13 +65,26 @@ class EventAggregatorProcess(Process):
             factory.start()
 
     def stop(self):
+        self.stop_factories()
+        self.event_queue.put(None)
+
+    def stop_factories(self):
         for factory in self.factories:
             factory.stop()
             factory.join()
-        self.event_queue.put(None)
 
     def run(self):
         is_stopped=False
+
+        try:
+            self.locked_file_handle = lock_file(self.machine.id)
+        except IOError:
+            self.machine.logger.error('Cannot start %s as it is already locked'%self.machine.id)
+            self.stop_factories()
+            return
+
+        self.machine.logger.info('Running %s'%self.machine.id)
+
         while not is_stopped:
             msg = self.event_queue.get()
             if msg:
@@ -72,5 +92,13 @@ class EventAggregatorProcess(Process):
                 if isinstance(self.machine.current_state, FinalState):
                     self.stop()
             else:
-                self.machine.logger.info('EventAggregatorProcess Received poison pill.')
+                self.machine.logger.info('EventAggregatorProcess received poison pill.')
                 is_stopped=True
+
+
+def lock_file(process_id):
+    pid_file = '/tmp/program_%s.pid'%process_id
+    print('Locking %s'%pid_file)
+    fp = open(pid_file, 'w')
+    fcntl.lockf(fp, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    return fp
