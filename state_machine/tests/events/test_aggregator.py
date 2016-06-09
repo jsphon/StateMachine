@@ -1,11 +1,10 @@
 from unittest import TestCase
 from state_machine.events.aggregator import EventAggregator, EventAggregatorProcess, DuplicateAggregatorException
-from state_machine.events.factory import TickFactory
+from state_machine.events.stream import TickStream
 from state_machine import StateMachine, FinalState, Event
 from mock import MagicMock
 import time
 import logging
-
 
 
 def under_3_logs(event, state):
@@ -31,7 +30,10 @@ class LogMachine(StateMachine):
         self.logger.setLevel(logging.DEBUG)
 
         formatter      = logging.Formatter('%(process)d %(asctime)s - %(name)s - %(levelname)s - %(message)s')
-        self.logger.handlers[0].setFormatter(formatter)
+        sh = logging.StreamHandler()
+        sh.setFormatter(formatter)
+        self.logger.addHandler(sh)
+        #self.logger.handlers[0].setFormatter(formatter)
 
         s1 = self.create_state('log event')
         s2 = self.create_state('final', FinalState)
@@ -50,14 +52,14 @@ class TestEventAggregator(TestCase):
     def test__init__(self):
         machine = MagicMock()
         config = {}
-        ea = EventAggregator([TickFactory], machine, config)
+        ea = EventAggregator([TickStream], machine, config)
         self.assertIsInstance(ea, EventAggregator)
 
     def test_start_stop(self):
         machine = MagicMock()
         config = {}
 
-        ea = EventAggregator([TickFactory], machine, config)
+        ea = EventAggregator([TickStream], machine, config)
         ea.start()
         time.sleep(3)
         ea.stop()
@@ -71,7 +73,7 @@ class TestEventAggregator(TestCase):
         machine = LogMachine()
         config = {}
 
-        ea = EventAggregator([TickFactory], machine, config)
+        ea = EventAggregator([TickStream], machine, config)
         ea.start()
         time.sleep(3)
         ea.stop()
@@ -82,7 +84,7 @@ class TestEventAggregator(TestCase):
         machine = LogMachine()
         config = {}
 
-        ea = EventAggregator([TickFactory], machine, config)
+        ea = EventAggregator([TickStream], machine, config)
         ea.start()
 
         time.sleep(4)
@@ -97,14 +99,14 @@ class TestEventAggregatorProcess(TestCase):
     def test__init__(self):
         machine = MagicMock()
         config = {}
-        ea = EventAggregatorProcess([TickFactory], machine, config)
+        ea = EventAggregatorProcess([TickStream], machine, config)
         self.assertIsInstance(ea, EventAggregatorProcess)
 
     def test_start_stop(self):
         machine = LogMachine()
         config = {}
 
-        ea = EventAggregatorProcess([TickFactory], machine, config)
+        ea = EventAggregatorProcess([TickStream], machine, config)
         ea.start()
         time.sleep(3)
         ea.stop()
@@ -117,7 +119,7 @@ class TestEventAggregatorProcess(TestCase):
         machine = LogMachine()
         config = {}
 
-        ea = EventAggregatorProcess([TickFactory], machine, config)
+        ea = EventAggregatorProcess([TickStream], machine, config)
         ea.start()
 
         while ea.is_alive():
