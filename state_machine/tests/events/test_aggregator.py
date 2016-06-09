@@ -5,6 +5,7 @@ from state_machine import StateMachine, FinalState, Event
 from mock import MagicMock
 import time
 import logging
+import uuid
 
 
 def under_3_logs(event, state):
@@ -61,7 +62,7 @@ class TestEventAggregator(TestCase):
 
         ea = EventAggregator([TickStream], machine, config)
         ea.start()
-        time.sleep(3)
+        time.sleep(1)
         ea.stop()
         ea.join()
 
@@ -69,14 +70,29 @@ class TestEventAggregator(TestCase):
 
         self.assertTrue( machine.notify.call_count>0 )
 
+    def test_start_raises_KeyError(self):
+        machine = LogMachine()
+        machine.name = uuid.uuid4()
+        config = {}
+        ea = EventAggregator([TickStream], machine, config)
+        ea.start()
+
+        time.sleep(0.1)
+
+        ea = EventAggregator([TickStream], machine, config)
+        with self.assertRaises(KeyError):
+            ea.start()
+
+
     def test_start_stop2(self):
         machine = LogMachine()
         config = {}
 
         ea = EventAggregator([TickStream], machine, config)
         ea.start()
-        time.sleep(3)
+        time.sleep(1)
         ea.stop()
+        ea.join()
 
         self.assertFalse(ea.isAlive())
 

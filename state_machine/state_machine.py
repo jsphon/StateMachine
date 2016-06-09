@@ -47,6 +47,10 @@ class StateMachine(DelayedObservable):
         return '<StateMachine name="%s">'%self.name
 
     @property
+    def id(self):
+        return self.name
+
+    @property
     def vars(self):
         return self._vars
 
@@ -116,7 +120,7 @@ class StateMachine(DelayedObservable):
             CURRENT_STATE_NAME: state.name,
             CURRENT_STATE_COMMENT:'',
         }
-        self.data.set_multi( **kwargs )
+        #self.data.set_multi( **kwargs )
         self._current_state = state
 
     def set_state_by_name(self, name):

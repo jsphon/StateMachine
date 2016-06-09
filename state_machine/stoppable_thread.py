@@ -50,4 +50,7 @@ class UniqueStoppableThread(threading.Thread):
 
     def _remove_pid_file(self):
         if os.path.exists(self.pid_file):
-            os.remove(self.pid_file)
+            try:
+                os.remove(self.pid_file)
+            except FileNotFoundError:
+                pass

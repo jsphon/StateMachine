@@ -1,14 +1,13 @@
-from state_machine.stoppable_thread import StoppableThread
+from state_machine.stoppable_thread import UniqueStoppableThread
 from state_machine import  FinalState
-from multiprocessing import Process, Queue, Value
-import os
+from multiprocessing import Process, Queue
 import queue
-import fcntl, sys
+import fcntl
 
 class DuplicateAggregatorException(Exception):
     pass
 
-class EventAggregator(StoppableThread):
+class EventAggregator(UniqueStoppableThread):
     ''' Listen for messages
     '''
 
@@ -17,7 +16,7 @@ class EventAggregator(StoppableThread):
         self.machine = machine
         self.event_queue = queue.Queue()
         self.factories = [fc(config, self.event_queue) for fc in event_factory_classes]
-
+        self.name = machine.id
 
     def start(self):
         super(EventAggregator, self).start()
