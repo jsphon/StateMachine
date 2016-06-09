@@ -1,8 +1,6 @@
 from unittest import TestCase
-from state_machine.events.aggregator import EventAggregator
-from state_machine.events.factory import TickFactory
-from state_machine import StateMachine, FinalState
-from mock import MagicMock
+from state_machine.events.stream import TickStream
+
 import threading
 import queue
 import time
@@ -10,7 +8,7 @@ import logging
 logger = logging.getLogger()
 logger.addHandler(logging.StreamHandler())
 
-class TestTickFactory(TestCase):
+class TestTickStream(TestCase):
 
     def test_xxx(self):
 
@@ -18,7 +16,7 @@ class TestTickFactory(TestCase):
 
         event_queue = queue.Queue()
         cfg = {}
-        f = TickFactory(cfg, event_queue)
+        f = TickStream(cfg, event_queue)
 
         f.start()
         time.sleep(3)
