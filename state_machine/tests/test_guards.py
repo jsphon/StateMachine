@@ -1,6 +1,7 @@
 import unittest
 import state_machine.guards as guards
 from state_machine import FinalState, StateMachine, Event, CompositeState
+import datetime
 
 class GuardTests(unittest.TestCase):
 
@@ -36,3 +37,37 @@ class GuardTests(unittest.TestCase):
         e=Event()
         self.assertFalse( guards.is_child_final(e, s))
 
+    def test_tick_before(self):
+        dt = datetime.datetime.utcnow()
+        dtp1 = dt+datetime.timedelta(1)
+        dtm1 = dt-datetime.timedelta(1)
+
+        state = None
+
+        g = guards.tick_before(dt)
+
+        e = Event('tick',dtp1)
+        r = g(e, state)
+        self.assertFalse(r)
+
+        e = Event('tick',dtm1)
+        r=g(e, state)
+        self.assertTrue(r)
+
+    def test_tick_after(self):
+
+        dt = datetime.datetime.utcnow()
+        dtp1 = dt+datetime.timedelta(1)
+        dtm1 = dt-datetime.timedelta(1)
+
+        state = None
+
+        g = guards.tick_after(dt)
+
+        e = Event('tick', dtp1)
+        r = g(e, state)
+        self.assertTrue(r)
+
+        e = Event('tick', dtm1)
+        r=g(e, state)
+        self.assertFalse(r)
