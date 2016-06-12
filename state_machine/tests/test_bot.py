@@ -87,6 +87,7 @@ class TestBotThread(TestCase):
 
     def test_bot_stops_when_finalised(self):
         machine = LogMachine()
+        machine.name = uuid.uuid4()
         config = {'tick_interval':0.01}
 
         ea = BotThread([TickStream], machine, config)
