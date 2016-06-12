@@ -10,9 +10,8 @@ logger.addHandler(logging.StreamHandler())
 
 class MockThread(UniqueStoppableThread):
 
-    def __init__(self, name):
-        super(MockThread, self).__init__()
-        self.name=name
+    def __init__(self, id):
+        super(MockThread, self).__init__(id)
 
     def loop(self):
         logger.info('loop')
@@ -88,3 +87,34 @@ class TestStoppableProcess(TestCase):
         p.join()
 
         self.assertFalse(p.is_alive())
+
+
+class MockUniqueStoppableProcess(mod.UniqueStoppableProcess):
+
+    def __init__(self, id):
+        super(MockUniqueStoppableProcess, self).__init__(id)
+
+    def loop(self):
+        logger.info('loop')
+        time.sleep(1)
+
+
+class TestUniqueStoppableProcess(TestCase):
+
+    def test_start_raises_KeyError(self):
+
+        # SETUP
+        process_id = uuid.uuid4()
+
+        t1 = MockUniqueStoppableProcess(process_id)
+        t1.start()
+
+        self.assertTrue(t1.is_alive())
+
+        # TEST/VERIFY
+        t2 = MockThread(process_id)
+        with self.assertRaises(KeyError):
+            t2.start()
+
+        # TEAR DOWN
+        t1.stop()

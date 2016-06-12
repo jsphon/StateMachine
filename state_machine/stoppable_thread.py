@@ -11,6 +11,10 @@ class StoppableThread(threading.Thread):
         super(StoppableThread, self).__init__()
         self._is_running=False
 
+    @property
+    def is_running(self):
+        return self._is_running
+
     def start(self):
         self._is_running=True
         threading.Thread.start(self)
@@ -32,6 +36,10 @@ class StoppableProcess(multiprocessing.Process):
         multiprocessing.Process.__init__(self)
         self._is_running = multiprocessing.Value(ctypes.c_bool, False )
 
+    @property
+    def is_running(self):
+        return self._is_running.value
+
     def start(self):
         multiprocessing.Process.start(self)
         self._is_running.value=True
@@ -49,13 +57,13 @@ class StoppableProcess(multiprocessing.Process):
 
 class Unique(object):
 
-    def __init__(self):
+    def __init__(self, id):
         self.pid_file = None
         self.pid_fh = None
-        self.name = 'default'
+        self.id = id
 
     def start(self):
-        self.pid_file = os.path.join('/tmp/', '%s.pid'%self.name)
+        self.pid_file = os.path.join('/tmp/', '%s.pid'%self.id)
         if os.path.exists(self.pid_file):
             raise KeyError('pid file %s already exists'%self.pid_file)
         else:
@@ -71,11 +79,12 @@ class Unique(object):
             except FileNotFoundError:
                 pass
 
+
 class UniqueStoppableThread(StoppableThread, Unique):
 
-    def __init__(self):
+    def __init__(self, id=None):
         StoppableThread.__init__(self)
-        Unique.__init__(self)
+        Unique.__init__(self, id)
 
     def start(self):
         Unique.start( self )
@@ -83,4 +92,19 @@ class UniqueStoppableThread(StoppableThread, Unique):
 
     def run(self):
         StoppableThread.run(self)
+        Unique.on_stop(self)
+
+
+class UniqueStoppableProcess(StoppableProcess, Unique):
+
+    def __init__(self, id):
+        StoppableProcess.__init__(self)
+        Unique.__init__(self, id)
+
+    def start(self):
+        Unique.start(self)
+        StoppableProcess.start(self)
+
+    def run(self):
+        StoppableProcess.run(self)
         Unique.on_stop(self)
