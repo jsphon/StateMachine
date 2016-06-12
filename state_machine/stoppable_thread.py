@@ -91,8 +91,10 @@ class UniqueStoppableThread(StoppableThread, Unique):
         StoppableThread.start(self)
 
     def run(self):
-        StoppableThread.run(self)
-        Unique.on_stop(self)
+        try:
+            StoppableThread.run(self)
+        finally:
+            Unique.on_stop(self)
 
 
 class UniqueStoppableProcess(StoppableProcess, Unique):
@@ -106,5 +108,7 @@ class UniqueStoppableProcess(StoppableProcess, Unique):
         StoppableProcess.start(self)
 
     def run(self):
-        StoppableProcess.run(self)
-        Unique.on_stop(self)
+        try:
+            StoppableProcess.run(self)
+        finally:
+            Unique.on_stop(self)
