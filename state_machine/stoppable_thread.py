@@ -82,7 +82,7 @@ class Unique(object):
 
 class UniqueStoppableThread(StoppableThread, Unique):
 
-    def __init__(self, id=None):
+    def __init__(self, id):
         StoppableThread.__init__(self)
         Unique.__init__(self, id)
 
