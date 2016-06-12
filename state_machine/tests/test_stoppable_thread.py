@@ -1,5 +1,6 @@
 from unittest import TestCase
 from state_machine.stoppable_thread import UniqueStoppableThread
+import state_machine.stoppable_thread as mod
 import uuid
 import time
 
@@ -15,7 +16,8 @@ class MockThread(UniqueStoppableThread):
 
     def loop(self):
         logger.info('loop')
-        time.sleep(1)
+        time.sleep(0.1)
+
 
 class TestUniqueStoppableThread(TestCase):
 
@@ -25,7 +27,7 @@ class TestUniqueStoppableThread(TestCase):
         logger.info('Starting')
         t.start()
 
-        self.assertTrue(t.is_running)
+        self.assertTrue(t._is_running)
         self.assertTrue(t.is_alive())
 
         time.sleep(0.1)
@@ -33,7 +35,7 @@ class TestUniqueStoppableThread(TestCase):
         logger.info('Stopping')
         t.stop()
         t.join()
-        self.assertFalse(t.is_running)
+        self.assertFalse(t._is_running)
         self.assertFalse(t.is_alive())
 
     def test_start_raises_KeyError(self):
@@ -53,3 +55,36 @@ class TestUniqueStoppableThread(TestCase):
 
         # TEAR DOWN
         t1.stop()
+
+
+class MockStoppableProcess(mod.StoppableProcess):
+
+    def __init__(self):
+        super(MockStoppableProcess, self).__init__()
+
+    def loop(self):
+        logger.info('loop')
+        time.sleep(1)
+
+
+class TestStoppableProcess(TestCase):
+
+    def test___init__(self):
+        MockStoppableProcess()
+
+    def test_start(self):
+        p = MockStoppableProcess()
+        p.start()
+
+        self.assertTrue(p.is_alive())
+
+        p.terminate()
+
+    def test_stop(self):
+        p = MockStoppableProcess()
+        p.start()
+        p.stop()
+        p._is_running=False
+        p.join()
+
+        self.assertFalse(p.is_alive())
