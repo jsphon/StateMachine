@@ -19,6 +19,7 @@ class FixedDurationMachine(StateMachine):
         state_tick.add_transition_to(state_final, 'tick', guard=guards.tick_after(self.date_threshold))
 
         self.tick_transition = state_tick.transitions[0]
+        self.initialise()
 
     def call_on_tick(self, state, event):
         self.on_tick(state, event)
