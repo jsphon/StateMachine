@@ -6,7 +6,7 @@ from state_machine.exception import StateMachineException
 from state_machine.state import State, PseudoState
 from state_machine import CompositeState
 from state_machine import Event
-from mock import MagicMock
+from unittest.mock import MagicMock
 
 
 class StateMachineTests(unittest.TestCase):

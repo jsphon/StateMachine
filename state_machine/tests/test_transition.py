@@ -1,6 +1,6 @@
 import unittest
 from state_machine import Transition, Event
-from mock import MagicMock
+from unittest.mock import MagicMock
 from state_machine.condition import ALWAYS_TRUE, ALWAYS_FALSE
 
 class TransitionTests(unittest.TestCase):

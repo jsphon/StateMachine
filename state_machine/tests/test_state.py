@@ -1,14 +1,10 @@
-'''
-Created on 24 May 2015
-
-@author: jon
-'''
 import unittest
 from state_machine import Event, State, StateMachine, PseudoState
 from state_machine.state import BaseState
-from mock import MagicMock
+from unittest.mock import MagicMock
 
 class BaseStateTests(unittest.TestCase):
+
 
     def test___init__(self):
         m = StateMachine()
@@ -22,11 +18,11 @@ class BaseStateTests(unittest.TestCase):
         bs = BaseState( 'name', m)
         bs.on_start = MagicMock()
 
-        #TEST
+        # TEST
         e = Event()
         bs.start(e)
 
-        #VERIFY
+        # VERIFY
         bs.on_start.assert_called_once_with(e, bs)
 
     def test_on_end(self):

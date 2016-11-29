@@ -1,6 +1,6 @@
 import unittest
 from state_machine import Event, State, StateMachine, CompositeState, FinalState
-from mock import MagicMock
+from unittest.mock import MagicMock
 
 import logging
 logging.basicConfig(level=logging.DEBUG)

@@ -4,9 +4,8 @@ Created on 24 May 2015
 @author: jon
 '''
 import unittest
-from state_machine import Event, State, StateMachine, PseudoState, FinalState, CompositeState
-from state_machine.state import BaseState
-from mock import MagicMock
+from state_machine import State, StateMachine, FinalState, CompositeState
+from unittest.mock import MagicMock
 import state_machine.diagrams as diagrams
 
 class DiagramTests(unittest.TestCase):

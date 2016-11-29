@@ -1,7 +1,7 @@
 from unittest import TestCase
 
 from state_machine.events import Event, Observer, Observable, DelayedObservable
-from mock import MagicMock
+from unittest.mock import MagicMock
 
 class ObserverableTests(TestCase):
     ''' An implemenation of the Observer Pattern

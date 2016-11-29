@@ -3,7 +3,7 @@ import time
 import uuid
 from unittest import TestCase
 
-from mock import MagicMock
+from unittest.mock import MagicMock
 
 from state_machine import StateMachine, FinalState
 from state_machine.bot import BotThread, BotProcess
