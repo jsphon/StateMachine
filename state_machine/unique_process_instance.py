@@ -28,7 +28,7 @@ class UniqueProcessInstance(object):
     def __exit__(self, type_, value, traceback):
         self.stop()
 
-    def start(self):
+    def start(self, timeout_seconds=TIMEOUT_SECONDS):
         try:
             os.makedirs(self.pid_folder)
         except Exception as e:
@@ -36,10 +36,10 @@ class UniqueProcessInstance(object):
                 raise ProcessExistsException('Process %s already exists'%self.id)
             raise
 
-    def stop(self):
-        self._remove_pid_folder()
+        self.create_timeout(timeout_seconds)
 
-    def _remove_pid_folder(self):
+    def stop(self):
+        os.remove(self.timeout_file)
         os.rmdir(self.pid_folder)
 
     def create_timeout(self, timeout_seconds=TIMEOUT_SECONDS):

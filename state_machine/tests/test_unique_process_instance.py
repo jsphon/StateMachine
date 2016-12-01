@@ -30,30 +30,27 @@ class TestUniqueStoppableThread(TestCase):
         self.instance = UniqueProcessInstance(uid)
 
     def test___init__(self):
-        uid = str(uuid.uuid4())
-        instance = UniqueProcessInstance(uid)
-        self.assertIsInstance(instance, UniqueProcessInstance)
+        self.assertIsInstance(self.instance, UniqueProcessInstance)
 
     def test_start_success(self):
-        uid = str(uuid.uuid4())
-        instance = UniqueProcessInstance(uid)
-        instance.start()
 
-        r = os.path.exists(instance.pid_folder)
-        self.assertTrue(r)
+        self.instance.start()
+
+        self.assertPathExists(self.instance.pid_folder)
+        self.assertPathExists(self.instance.timeout_file)
 
     def test_start_fail(self):
-        uid = str(uuid.uuid4())
-        instance = UniqueProcessInstance(uid)
-        instance.start()
+
+        self.instance.start()
 
         with self.assertRaises(ProcessExistsException):
-            instance.start()
+            self.instance.start()
 
     def test_stop(self):
         #SETUP
         os.makedirs(self.instance.pid_folder)
-
+        with open(self.instance.timeout_file, 'w') as f:
+            f.write('')
         r = os.path.exists(self.instance.pid_folder)
         self.assertTrue(r)
 
@@ -96,3 +93,6 @@ class TestUniqueStoppableThread(TestCase):
 
     def assertPathExists(self, path):
         self.assertTrue(os.path.exists(path))
+
+    def assertPathDoesNotExist(self, path):
+        self.assertFalse(os.path.exists(path))
