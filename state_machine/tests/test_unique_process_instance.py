@@ -39,12 +39,36 @@ class TestUniqueStoppableThread(TestCase):
         self.assertPathExists(self.instance.pid_folder)
         self.assertPathExists(self.instance.timeout_file)
 
-    def test_start_fail(self):
+    def test_start_twice_fail(self):
 
         self.instance.start()
 
         with self.assertRaises(ProcessExistsException):
             self.instance.start()
+
+    @patch('state_machine.unique_process_instance.DateTime')
+    def test_start_twice_success(self, mock_date_time):
+
+        utcnow = datetime.utcnow()
+        mock_date_time.utcnow.return_value = utcnow
+        self.instance.start()
+
+        utcnow += timedelta(seconds=unique_process_instance.TIMEOUT_SECONDS+1)
+        mock_date_time.utcnow.return_value = utcnow
+
+        self.instance.start()
+
+    @patch('state_machine.unique_process_instance.DateTime')
+    def test_get_timeout(self, mock_date_time):
+        utcnow = datetime.utcnow()
+        mock_date_time.utcnow.return_value = utcnow
+        self.instance.start(timeout_seconds=5)
+
+        expected_timeout = utcnow + timedelta(seconds=5)
+
+        actual_timeout = self.instance.get_timeout()
+
+        self.assertEqual(expected_timeout, actual_timeout)
 
     def test_stop(self):
         #SETUP
@@ -89,7 +113,6 @@ class TestUniqueStoppableThread(TestCase):
 
         timeout = datetime.strptime(timeout_str, '%Y-%m-%dT%H:%M:%S.%fZ')
         self.assertEqual(expected_timeout, timeout)
-
 
     def assertPathExists(self, path):
         self.assertTrue(os.path.exists(path))

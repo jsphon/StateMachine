@@ -32,11 +32,16 @@ class UniqueProcessInstance(object):
         try:
             os.makedirs(self.pid_folder)
         except Exception as e:
-            if e.errno==errno.EEXIST:
+            if DateTime.utcnow() > self.get_timeout():
+                self.stop()
+                self.start()
+            elif e.errno == errno.EEXIST:
                 raise ProcessExistsException('Process %s already exists'%self.id)
-            raise
-
-        self.create_timeout(timeout_seconds)
+            else:
+                raise
+        else:
+            # Only called if no exception
+            self.create_timeout(timeout_seconds)
 
     def stop(self):
         os.remove(self.timeout_file)
@@ -46,6 +51,12 @@ class UniqueProcessInstance(object):
         timeout = DateTime.utcnow() + timedelta(seconds=timeout_seconds)
         with open(self.timeout_file, 'w') as f:
             f.write(timeout.strftime('%Y-%m-%dT%H:%M:%S.%fZ'))
+
+    def get_timeout(self):
+        if os.path.exists(self.timeout_file):
+            with open(self.timeout_file, 'r') as f:
+                sdate = f.read()
+            return datetime.strptime(sdate, '%Y-%m-%dT%H:%M:%S.%fZ')
 
 class DateTime(datetime):
     pass
