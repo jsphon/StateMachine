@@ -1,12 +1,12 @@
 from unittest import TestCase
 from state_machine.stoppable_thread import UniqueStoppableThread
-from state_machine.unique_process_instance import UniqueProcessInstance, ProcessExistsException, DateTime, TIMEOUT_SECONDS
+from state_machine.unique_process_instance import RetryingUniqueProcessInstance, UniqueProcessInstance, ProcessExistsException, DateTime, TIMEOUT_SECONDS
 from state_machine import unique_process_instance
 from unittest.mock import patch
 import uuid
 import os
-import time
 from datetime import datetime, timedelta
+import time
 
 import logging
 logger = logging.getLogger('default')
@@ -21,6 +21,47 @@ class MockThread(UniqueStoppableThread):
     def loop(self):
         logger.info('loop')
         time.sleep(0.1)
+
+
+class TestRetryingUniqueStoppableThread(TestCase):
+
+    def setUp(self):
+        uid = str(uuid.uuid4())
+        self.instance = RetryingUniqueProcessInstance(uid)
+
+    @patch.object(UniqueProcessInstance, 'start')
+    def test_start_calls_parent(self, unique_process_instance_start):
+
+        self.instance.start()
+        unique_process_instance_start.assert_called_once_with()
+
+    @patch.object(time, 'sleep')
+    @patch.object(UniqueProcessInstance, 'start')
+    def test_start_retries_on_ProcessExistsException(self,
+            unique_process_instance_start,
+            sleep_mock):
+
+        ex = ProcessExistsException('test')
+        unique_process_instance_start.side_effect=[ex, ex, None]
+
+        self.instance.start()
+
+        self.assertEquals(3, unique_process_instance_start.call_count)
+        self.assertEquals(2, sleep_mock.call_count)
+
+    @patch.object(time, 'sleep')
+    @patch.object(UniqueProcessInstance, 'start')
+    def test_start_retries_unsuccessfully(self,
+            unique_process_instance_start,
+            mock_sleep):
+        ex = ProcessExistsException('test')
+        unique_process_instance_start.side_effect = ex
+
+        with self.assertRaises(ProcessExistsException):
+            self.instance.start()
+
+        self.assertEqual(4, unique_process_instance_start.call_count)
+        self.assertEqual(3, mock_sleep.call_count)
 
 
 class TestUniqueStoppableThread(TestCase):

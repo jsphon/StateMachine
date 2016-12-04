@@ -7,6 +7,7 @@ from datetime import datetime, timedelta
 import errno
 import getpass
 import os
+import time
 
 FOLDER = '/home/%s/state_machine/'%getpass.getuser()
 TIMEOUT_SECONDS = 300
@@ -57,6 +58,30 @@ class UniqueProcessInstance(object):
             with open(self.timeout_file, 'r') as f:
                 sdate = f.read()
             return datetime.strptime(sdate, '%Y-%m-%dT%H:%M:%S.%fZ')
+
+
+class RetryingUniqueProcessInstance(UniqueProcessInstance):
+
+    def __init__(self, uid, max_retries=3, delay=1.0):
+        super(RetryingUniqueProcessInstance, self).__init__(uid)
+        self.max_retries = max_retries
+        self.delay = delay
+
+    def start(self):
+        self._try_to_start(self.max_retries)
+
+    def _try_to_start(self, attempts_remaining):
+
+        try:
+            s = super(RetryingUniqueProcessInstance, self)
+            s.start()
+        except ProcessExistsException as e:
+            if attempts_remaining > 0:
+                time.sleep(self.delay)
+                self._try_to_start(attempts_remaining-1)
+            else:
+                raise e
+
 
 class DateTime(datetime):
     pass
