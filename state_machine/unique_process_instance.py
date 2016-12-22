@@ -8,6 +8,7 @@ import errno
 import getpass
 import os
 import time
+import logging
 
 FOLDER = '/home/%s/state_machine/'%getpass.getuser()
 TIMEOUT_SECONDS = 300
@@ -77,6 +78,7 @@ class RetryingUniqueProcessInstance(UniqueProcessInstance):
             s.start()
         except ProcessExistsException as e:
             if attempts_remaining > 0:
+                logging.info('%s already running, waiting %i seconds', self.id, self.delay)
                 time.sleep(self.delay)
                 self._try_to_start(attempts_remaining-1)
             else:
