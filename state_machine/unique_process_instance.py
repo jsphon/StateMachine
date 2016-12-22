@@ -13,15 +13,16 @@ import logging
 FOLDER = '/home/%s/state_machine/'%getpass.getuser()
 TIMEOUT_SECONDS = 300
 
+
 class ProcessExistsException(Exception):
     pass
 
 
 class UniqueProcessInstance(object):
 
-    def __init__(self, id):
-        self.id = id
-        self.pid_folder = os.path.join(FOLDER, id)
+    def __init__(self, key):
+        self.id = key
+        self.pid_folder = os.path.join(FOLDER, key)
         self.timeout_file = os.path.join(self.pid_folder, 'timeout')
 
     def __enter__(self):
