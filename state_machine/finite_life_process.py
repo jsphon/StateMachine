@@ -23,15 +23,10 @@ class FiniteLife(object):
         self.round_minutes = round_minutes
         self.delay_seconds = delay_seconds
 
-    def __enter__(self):
         utcnow = datetime.utcnow()
-        minutes_left = (self.round_minutes - utcnow.minute%self.round_minutes)
-        t = utcnow+timedelta(minutes=minutes_left)
+        minutes_left = (self.round_minutes - utcnow.minute % self.round_minutes)
+        t = utcnow + timedelta(minutes=minutes_left)
         self.end_time = datetime(t.year, t.month, t.day, t.hour, t.minute, self.delay_seconds)
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        pass
 
     @property
     def has_expired(self):
@@ -46,7 +41,7 @@ class FiniteLife(object):
 if __name__=='__main__':
 
     import time
-    with FiniteLife(round_minutes=5) as fl:
-        while fl.is_alive:
-            print('%s Sleeping till %s' % (datetime.utcnow(), fl.end_time))
-            time.sleep(1)
+    fl = FiniteLife(round_minutes=5)
+    while fl.is_alive:
+        print('%s Sleeping till %s' % (datetime.utcnow(), fl.end_time))
+        time.sleep(1)
