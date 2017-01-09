@@ -11,6 +11,10 @@ This package is designed to be used in event driven systems such as twitter bots
 - Extended State Variables
 - Hierarchical Machines (using composite states)
 
+## Examples:
+
+https://github.com/jsphon/StateMachine/wiki/Examples
+
 ## Notes
 
 
